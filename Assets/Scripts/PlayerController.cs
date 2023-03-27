@@ -24,9 +24,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("Player");
-        barrelChassis = GameObject.Find("BarrelChasis");
-        barrel = GameObject.Find("BarrelChasis/BarrelRotater");
-        shotOrigin = GameObject.Find("BarrelChasis/BarrelRotater/Barrel/ShotOrigin");
+        barrelChassis = GameObject.Find("Player/BarrelChasis");
+        barrel = GameObject.Find("Player/BarrelChasis/BarrelRotater");
+        shotOrigin = GameObject.Find("Player/BarrelChasis/BarrelRotater/Barrel/ShotOrigin");
 
         lastShotTimer = Time.time;
     }
