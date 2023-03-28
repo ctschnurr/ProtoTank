@@ -37,6 +37,11 @@ public class TurretController : MonoBehaviour
     public float speed = 0.25f;
 
     float singleStep;
+    public float nextY;
+
+    Vector3 targetAngle = new Vector3(0f, 0f, 0f);
+    Vector3 currentAngle;
+    Vector3 nextAngle;
 
     // Start is called before the first frame update
     void Start()
@@ -63,27 +68,41 @@ public class TurretController : MonoBehaviour
         {
             case State.idle:
                 chassisRotater.transform.Rotate(Vector3.up * 0.1f);
-                if (distance < 25) SetState(State.tracking);
+
+                currentAngle = barrel.transform.eulerAngles;
+                targetAngle.x = 80;
+                nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                barrel.transform.eulerAngles = nextAngle;
+
+                if (distance < 25) state = State.tracking;
                 break;
 
             case State.tracking:
                 Vector3 playerDirection = playerPosition;
 
+                // rotation for barrel chassis
                 Vector3 targetDirection = playerPosition - chassisRotater.transform.position;
                 Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, singleStep, 0.0f);
                 newDirection.y = 0;
                 chassisRotater.transform.rotation = Quaternion.LookRotation(newDirection);
+                //
 
-                Vector3 targetRotation = barell.transform.rotation;
-                Vector3 newRotation = Vector3.RotateTowards(barrel.transform.forward, targetRotation, singleStep, 0.0f);
-                barrel.transform.rotation = Quaternion.LookRotation(newRotation);
+                // rotation for barrel
+                currentAngle = barrel.transform.eulerAngles;
+                barrelV = 500 / distance;
+                barrelV = Mathf.Clamp(barrelV, 40, 60);
+                targetAngle.x = barrelV;
+                nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                barrel.transform.eulerAngles = nextAngle;
+                //
 
+                // adjusting shot power based on distance to player
+                launchVelocity = 30 * distance;
+                launchVelocity = Mathf.Clamp(launchVelocity, 300, 600);
+                //
 
-                // barrelVertical = distance;
-                //barrelControl(barrelVertical);
-
-                if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, chassisRotater.transform.position) > 5) Fire();
-                if (Vector3.Distance(playerPosition, transform.position) > 25) SetState(State.idle);
+                if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, chassisRotater.transform.position) > 10) Fire();
+                if (Vector3.Distance(playerPosition, transform.position) > 25) state = State.idle;
                 break;
 
         }
@@ -101,25 +120,4 @@ public class TurretController : MonoBehaviour
         }
     }
 
-    public void SetState(State input)
-    {
-        switch (input)
-        {
-            case State.idle:
-                state = State.idle;
-                break;
-
-            case State.tracking:
-                state = State.tracking;
-                break;
-        }
-    }
-
-    void barrelControl(float vertical)
-    {
-        vertical = Mathf.Abs(vertical - 70);
-        barrelV = Mathf.Clamp(vertical, 15, 80);
-
-        barrel.transform.localRotation = Quaternion.Euler(barrelV, 0, 0);
-    }
 }
