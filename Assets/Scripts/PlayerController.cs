@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     float ShootDelay = 1;
     float lastShotTimer;
 
-    float barrelVertical = 80.0f;
+    float barrelVertical = 50.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
     void barrelControl(float horizontal, float vertical)
     {
         barrelH = Mathf.Clamp(horizontal, -45, 45);
-        barrelV = Mathf.Clamp(vertical, 50, 80);
+        barrelV = Mathf.Clamp(vertical, 60, 80);
         chassis.transform.localRotation = Quaternion.Euler(0, barrelH, 0);
         barrel.transform.localRotation = Quaternion.Euler(barrelV, 0, 0);
     }
