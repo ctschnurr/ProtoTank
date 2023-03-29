@@ -6,13 +6,13 @@ public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 3.0f;
     public float barrelSpeed = 1.0f;
-    GameObject barrelChassis;
+    GameObject chassis;
     GameObject barrel;
     GameObject player;
 
     public GameObject projectile;
     GameObject shotOrigin;
-    public float launchVelocity = 1000f;
+    public float launchVelocity = 800f;
 
     float barrelH;
     float barrelV;
@@ -20,23 +20,27 @@ public class PlayerController : MonoBehaviour
     float ShootDelay = 1;
     float lastShotTimer;
 
+    float barrelVertical = 80.0f;
+
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.Find("Player");
-        barrelChassis = GameObject.Find("Player/BarrelChasis");
-        barrel = GameObject.Find("Player/BarrelChasis/BarrelRotater");
-        shotOrigin = GameObject.Find("Player/BarrelChasis/BarrelRotater/Barrel/ShotOrigin");
+        chassis = GameObject.Find("Player/ChassisRotater");
+        barrel = GameObject.Find("Player/ChassisRotater/BarrelRotater");
+        shotOrigin = GameObject.Find("Player/ChassisRotater/BarrelRotater/Barrel/ShotOrigin");
 
         lastShotTimer = Time.time;
+
+
     }
 
     void barrelControl(float horizontal, float vertical)
     {
-        barrelH = Mathf.Clamp(horizontal, 225, 315);
-        barrelV = Mathf.Clamp(vertical, 105, 135);
-        barrelChassis.transform.localRotation = Quaternion.Euler(90, 0, barrelH);
-        barrel.transform.localRotation = Quaternion.Euler(90, 0, barrelV);
+        barrelH = Mathf.Clamp(horizontal, -45, 45);
+        barrelV = Mathf.Clamp(vertical, 50, 80);
+        chassis.transform.localRotation = Quaternion.Euler(0, barrelH, 0);
+        barrel.transform.localRotation = Quaternion.Euler(barrelV, 0, 0);
     }
 
     // Update is called once per frame
@@ -50,8 +54,9 @@ public class PlayerController : MonoBehaviour
         transform.Translate(0, 0, vert);
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)) transform.Rotate(0.0f, horiz, 0.0f);
 
+        float mouseY = Input.GetAxis("Mouse Y") * barrelSpeed;
         float barrelHorizontal = barrelH + Input.GetAxis("Mouse X") * barrelSpeed;
-        float barrelVertical = barrelV + Input.GetAxis("Mouse Y") * barrelSpeed;
+        barrelVertical -= mouseY;
         barrelControl(barrelHorizontal, barrelVertical);
 
         if (Input.GetKey(KeyCode.Space))
@@ -63,6 +68,11 @@ public class PlayerController : MonoBehaviour
 
                 lastShotTimer = Time.time;
             }
+        }
+
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Application.Quit();
         }
 
     }

@@ -74,7 +74,7 @@ public class TurretController : MonoBehaviour
                 nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
                 barrel.transform.eulerAngles = nextAngle;
 
-                if (distance < 25) state = State.tracking;
+                if (distance < 30) state = State.tracking;
                 break;
 
             case State.tracking:
