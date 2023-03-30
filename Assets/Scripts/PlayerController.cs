@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 3.0f;
+    public float moveSpeed = 1.0f;
     public float barrelSpeed = 1.0f;
+    float rotateSpeed = 0.25f;
     GameObject chassis;
     GameObject barrel;
     GameObject player;
@@ -22,6 +23,13 @@ public class PlayerController : MonoBehaviour
 
     float barrelVertical = 50.0f;
 
+    Vector3 targetAngle = new Vector3(0f, 0f, 0f);
+    Vector3 currentAngle;
+    Vector3 nextAngle;
+
+    public float fliptimer;
+    bool flipped = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,7 +40,7 @@ public class PlayerController : MonoBehaviour
 
         lastShotTimer = Time.time;
 
-
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -47,7 +55,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         float vert = Input.GetAxis("Vertical") * moveSpeed;
-        float horiz = Input.GetAxis("Horizontal");
+        float horiz = Input.GetAxis("Horizontal") * rotateSpeed;
 
         vert *= Time.deltaTime;
 
@@ -59,7 +67,7 @@ public class PlayerController : MonoBehaviour
         barrelVertical -= mouseY;
         barrelControl(barrelHorizontal, barrelVertical);
 
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetMouseButton(0))
         {
             if ((Time.time - lastShotTimer > ShootDelay))
             {
@@ -70,9 +78,37 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if(flipped == true)
+        {
+            currentAngle = transform.eulerAngles;
+            targetAngle.x = 0;
+            targetAngle.y = currentAngle.y;
+            targetAngle.z = 0;
+            nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, 0.05f), currentAngle.y, Mathf.LerpAngle(currentAngle.z, targetAngle.z, 0.05f));
+            transform.eulerAngles = nextAngle;
+
+            fliptimer = fliptimer - 0.025f;
+
+            if(fliptimer <= 0)
+            {
+                flipped = false;
+            }
+        }
+
         if (Input.GetKey(KeyCode.Escape))
         {
             Application.Quit();
+        }
+
+        if(Input.GetKeyDown(KeyCode.F) && flipped == false)
+        {
+            // transform.localRotation = Quaternion.Euler(0, transform.localRotation.y, 0);
+
+            //transform.Translate(0, 5, 0);
+            // transform.position = transform.position + new Vector3(0, 3, 0);
+
+            flipped = true;
+            fliptimer = 5;
         }
 
     }

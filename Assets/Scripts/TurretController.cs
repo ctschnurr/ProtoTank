@@ -80,14 +80,14 @@ public class TurretController : MonoBehaviour
             case State.tracking:
                 Vector3 playerDirection = playerPosition;
 
-                // rotation for barrel chassis
+                // left/right rotation for barrel chassis
                 Vector3 targetDirection = playerPosition - chassisRotater.transform.position;
                 Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, singleStep, 0.0f);
                 newDirection.y = 0;
                 chassisRotater.transform.rotation = Quaternion.LookRotation(newDirection);
                 //
 
-                // rotation for barrel
+                // up/down rotation for barrel
                 currentAngle = barrel.transform.eulerAngles;
                 barrelV = 500 / distance;
                 barrelV = Mathf.Clamp(barrelV, 40, 60);
