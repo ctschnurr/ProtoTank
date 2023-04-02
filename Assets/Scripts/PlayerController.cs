@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
 
     public GameObject projectile;
     GameObject shotOrigin;
-    public float launchVelocity = 800f;
+    public float launchVelocity = 1000f;
 
     float barrelH;
     float barrelV;

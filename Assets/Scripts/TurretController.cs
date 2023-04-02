@@ -7,12 +7,17 @@ public class TurretController : MonoBehaviour
     public enum State
     {
         idle,
-        tracking
+        tracking,
+        dead
     }
 
     Vector3 playerPosition = new Vector3(0, 0, 0);
 
+    GameObject parent;
+
     GameObject chassisRotater;
+    GameObject barrelRotater;
+    GameObject barrelChassis;
     GameObject barrel;
     GameObject shotOrigin;
     GameObject player;
@@ -43,19 +48,31 @@ public class TurretController : MonoBehaviour
     Vector3 currentAngle;
     Vector3 nextAngle;
 
+    Color torchedBarrel;
+    Color torchedChassis;
+
     // Start is called before the first frame update
     void Start()
     {
-        chassisRotater = GameObject.Find("TurretPrefab/ChassisRotater");
-        barrel = GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater");
-        shotOrigin = GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater/Barrel/ShotOrigin");
+        parent = transform.gameObject;
+
+        chassisRotater = parent.transform.Find("ChassisRotater").gameObject; // ("TurretPrefab/ChassisRotater");
+        barrelChassis = parent.transform.Find("ChassisRotater/BarrelChassis").gameObject; // ("TurretPrefab/ChassisRotater/BarrelChassis");
+        barrelRotater = parent.transform.Find("ChassisRotater/BarrelRotater").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater");
+        barrel = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater/Barrel");
+        shotOrigin = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel/ShotOrigin").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater/Barrel/ShotOrigin");
         player = GameObject.Find("Player").gameObject;
 
         lastShotTimer = Time.time;
 
-        barrel.transform.localRotation = Quaternion.Euler(80, 0, 0);
+        barrelRotater.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
         singleStep = speed * Time.deltaTime;
+
+        torchedBarrel = barrel.GetComponent<Renderer>().material.color;
+        torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
+        torchedChassis = barrelChassis.GetComponent<Renderer>().material.color;
+        torchedChassis = new Color(torchedChassis.r - 0.5f, torchedChassis.g - 0.5f, torchedChassis.b - 0.5f);
     }
 
     // Update is called once per frame
@@ -69,10 +86,10 @@ public class TurretController : MonoBehaviour
             case State.idle:
                 chassisRotater.transform.Rotate(Vector3.up * 0.1f);
 
-                currentAngle = barrel.transform.eulerAngles;
+                currentAngle = barrelRotater.transform.eulerAngles;
                 targetAngle.x = 80;
                 nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                barrel.transform.eulerAngles = nextAngle;
+                barrelRotater.transform.eulerAngles = nextAngle;
 
                 if (distance < 30) state = State.tracking;
                 break;
@@ -88,12 +105,12 @@ public class TurretController : MonoBehaviour
                 //
 
                 // up/down rotation for barrel
-                currentAngle = barrel.transform.eulerAngles;
+                currentAngle = barrelRotater.transform.eulerAngles;
                 barrelV = 500 / distance;
                 barrelV = Mathf.Clamp(barrelV, 40, 60);
                 targetAngle.x = barrelV;
                 nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                barrel.transform.eulerAngles = nextAngle;
+                barrelRotater.transform.eulerAngles = nextAngle;
                 //
 
                 // adjusting shot power based on distance to player
@@ -105,6 +122,11 @@ public class TurretController : MonoBehaviour
                 if (Vector3.Distance(playerPosition, transform.position) > 25) state = State.idle;
                 break;
 
+            case State.dead:
+                barrel.GetComponent<Rigidbody>().isKinematic = false;
+                barrel.GetComponent<Renderer>().material.color = torchedBarrel;
+                barrelChassis.GetComponent<Renderer>().material.color = torchedChassis;
+                break;
         }
 
     }
@@ -120,4 +142,11 @@ public class TurretController : MonoBehaviour
         }
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Shell")
+        {
+            state = State.dead;
+        }
+    }
 }

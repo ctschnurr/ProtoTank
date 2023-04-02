@@ -997,6 +997,8 @@ GameObject:
   - component: {fileID: 6617060235409580686}
   - component: {fileID: 4927659387793693168}
   - component: {fileID: 4335812501262172994}
+  - component: {fileID: 988670241970005613}
+  - component: {fileID: 7684787016323640523}
   m_Layer: 0
   m_Name: TankPrefab
   m_TagString: Player
@@ -1050,8 +1052,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2.75049, y: 1.6266785, z: 4.236554}
-  m_Center: {x: -0.0005056858, y: 0.8141, z: 0.0030941963}
+  m_Size: {x: 0.46424758, y: 0.507974, z: 4.236554}
+  m_Center: {x: -1.1436269, y: 0.7440837, z: 0.0030941956}
 --- !u!65 &6617060235409580686
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1063,8 +1065,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.490628, y: 1.0189943, z: 3.9877212}
-  m_Center: {x: 1.1262642, y: 0.49835265, z: -0.020695806}
+  m_Size: {x: 0.49062788, y: 0.5025787, z: 3.9877212}
+  m_Center: {x: 1.1262642, y: 0.75656044, z: -0.0206958}
 --- !u!65 &4927659387793693168
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1094,6 +1096,35 @@ MonoBehaviour:
   barrelSpeed: 1
   projectile: {fileID: 0}
   launchVelocity: 700
+  fliptimer: 0
+--- !u!136 &988670241970005613
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429590635865646560}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.24795753
+  m_Height: 4.095605
+  m_Direction: 2
+  m_Center: {x: -1.1397156, y: 0.25886625, z: -0.016889092}
+--- !u!136 &7684787016323640523
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429590635865646560}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.26035208
+  m_Height: 4.037012
+  m_Direction: 2
+  m_Center: {x: 1.1304569, y: 0.2469101, z: 0.0005135535}
 --- !u!1 &2199741340564741165
 GameObject:
   m_ObjectHideFlags: 0

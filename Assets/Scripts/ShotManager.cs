@@ -21,8 +21,9 @@ public class ShotManager : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        GetComponent<Collider>().enabled = !GetComponent<Collider>().enabled;
         save = transform.position;
-        save.y -= 0.5f;
+        //save.y -= 0.5f;
 
         GameObject boom = Instantiate(explosion, save, transform.rotation);
         Destroy(gameObject);

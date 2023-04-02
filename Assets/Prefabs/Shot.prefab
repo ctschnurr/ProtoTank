@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 3392172658642965721}
   m_Layer: 0
   m_Name: Shot
-  m_TagString: Untagged
+  m_TagString: Shell
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8662,7 +8662,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.125
+  m_Radius: 0.15
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3392172658642965721
 MonoBehaviour:
@@ -8676,4 +8676,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 390e17ee06c8e0e4b952d3ca7e9e6d78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosion: {fileID: 74003101272412966, guid: f4039cfc8c7a3eb4abecbfde4df8d37c, type: 3}
+  explosion: {fileID: 2646004533521610104, guid: d73eb1aad59274d4a91fe85479d3600e, type: 3}
