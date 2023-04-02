@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
     Vector3 currentAngle;
     Vector3 nextAngle;
+    Vector3 respawn;
 
     public float fliptimer;
     bool flipped = false;
@@ -50,6 +51,10 @@ public class PlayerController : MonoBehaviour
         lastShotTimer = Time.time;
 
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        respawn = transform.position;
+        respawn.y += 1;
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -58,6 +63,12 @@ public class PlayerController : MonoBehaviour
         barrelV = Mathf.Clamp(vertical, 60, 80);
         chassis.transform.localRotation = Quaternion.Euler(0, barrelH, 0);
         barrel.transform.localRotation = Quaternion.Euler(barrelV, 0, 0);
+    }
+
+    public void Respawn()
+    {
+        transform.position = respawn;
+        transform.rotation = Quaternion.identity;
     }
 
     // Update is called once per frame
