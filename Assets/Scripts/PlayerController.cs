@@ -7,9 +7,13 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 1.0f;
     public float barrelSpeed = 1.0f;
     float rotateSpeed = 0.25f;
+    float throttleFactor = 2f;
+    bool throttle = false;
     GameObject chassis;
     GameObject barrel;
     GameObject player;
+
+    GameObject controlsScreen;
 
     public GameObject projectile;
     GameObject shotOrigin;
@@ -17,6 +21,8 @@ public class PlayerController : MonoBehaviour
 
     float barrelH;
     float barrelV;
+
+    float vert;
 
     float ShootDelay = 1;
     float lastShotTimer;
@@ -33,6 +39,9 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        controlsScreen = GameObject.Find("Controls");
+        controlsScreen.SetActive(false);
+
         player = GameObject.Find("Player");
         chassis = GameObject.Find("Player/ChassisRotater");
         barrel = GameObject.Find("Player/ChassisRotater/BarrelRotater");
@@ -54,12 +63,15 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float vert = Input.GetAxis("Vertical") * moveSpeed;
+        if (throttle) vert = Input.GetAxis("Vertical") * (moveSpeed * throttleFactor);
+        if (!throttle) vert = Input.GetAxis("Vertical") * moveSpeed;
+
         float horiz = Input.GetAxis("Horizontal") * rotateSpeed;
 
         vert *= Time.deltaTime;
 
         transform.Translate(0, 0, vert);
+
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)) transform.Rotate(0.0f, horiz, 0.0f);
 
         float mouseY = Input.GetAxis("Mouse Y") * barrelSpeed;
@@ -111,5 +123,10 @@ public class PlayerController : MonoBehaviour
             fliptimer = 5;
         }
 
+        if (Input.GetKey(KeyCode.LeftShift)) throttle = true;
+        if (Input.GetKeyUp(KeyCode.LeftShift)) throttle = false;
+
+        if (Input.GetKey(KeyCode.Tab)) controlsScreen.SetActive(true);
+        if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
     }
 }

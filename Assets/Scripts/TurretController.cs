@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TurretController : MonoBehaviour
 {
+    [HideInInspector]
     public enum State
     {
         idle,
@@ -22,12 +23,15 @@ public class TurretController : MonoBehaviour
     GameObject shotOrigin;
     GameObject player;
 
-    public float launchVelocity = 500f;
+    public float turretSightDistance = 30.0f;
+    public float turretFireDistance = 25.0f;
+    public float turretMinDistance = 10.0f;
+    public float launchVelocity = 800f;
     public GameObject projectile;
 
-    public float distance;
+    float distance;
 
-    public float barrelV;
+    float barrelV;
     float barrelVertical;
 
     float ShootDelay = 2;
@@ -39,10 +43,10 @@ public class TurretController : MonoBehaviour
     private Quaternion _lookRotation;
     private Vector3 _direction;
 
-    public float speed = 0.25f;
+  float barrelRotateSpeed = 0.25f;
 
-    float singleStep;
-    public float nextY;
+
+    float nextY;
 
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
     Vector3 currentAngle;
@@ -67,7 +71,7 @@ public class TurretController : MonoBehaviour
 
         barrelRotater.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
-        singleStep = speed * Time.deltaTime;
+        barrelRotateSpeed = barrelRotateSpeed * Time.deltaTime;
 
         torchedBarrel = barrel.GetComponent<Renderer>().material.color;
         torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
@@ -91,7 +95,7 @@ public class TurretController : MonoBehaviour
                 nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
                 barrelRotater.transform.eulerAngles = nextAngle;
 
-                if (distance < 30) state = State.tracking;
+                if (distance < turretSightDistance) state = State.tracking;
                 break;
 
             case State.tracking:
@@ -99,7 +103,7 @@ public class TurretController : MonoBehaviour
 
                 // left/right rotation for barrel chassis
                 Vector3 targetDirection = playerPosition - chassisRotater.transform.position;
-                Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, singleStep, 0.0f);
+                Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, barrelRotateSpeed, 0.0f);
                 newDirection.y = 0;
                 chassisRotater.transform.rotation = Quaternion.LookRotation(newDirection);
                 //
@@ -115,11 +119,11 @@ public class TurretController : MonoBehaviour
 
                 // adjusting shot power based on distance to player
                 launchVelocity = 30 * distance;
-                launchVelocity = Mathf.Clamp(launchVelocity, 300, 600);
+                launchVelocity = Mathf.Clamp(launchVelocity, 300, 700);
                 //
 
-                if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, chassisRotater.transform.position) > 10) Fire();
-                if (Vector3.Distance(playerPosition, transform.position) > 25) state = State.idle;
+                if (Vector3.Distance(playerPosition, transform.position) < turretFireDistance && Vector3.Distance(playerPosition, chassisRotater.transform.position) > turretMinDistance) Fire();
+                if (Vector3.Distance(playerPosition, transform.position) > turretSightDistance) state = State.idle;
                 break;
 
             case State.dead:

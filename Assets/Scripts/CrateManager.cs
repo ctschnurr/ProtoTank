@@ -5,7 +5,7 @@ using UnityEngine;
 public class CrateManager : MonoBehaviour
 {
     float decay_timer = 0.0f;
-    float fadeSpeed = 0.0008f;
+    float fadeSpeed = 0.005f;
 
     bool destroyed = false;
 

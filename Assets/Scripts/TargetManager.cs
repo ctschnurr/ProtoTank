@@ -1,80 +1,70 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class TargetManager : MonoBehaviour
 {
 
-    GameObject TargetA;
-    GameObject TargetB;
-    GameObject TargetC;
-    GameObject TargetD;
-    GameObject TargetE;
-    GameObject TargetF;
-    GameObject TargetG;
-    GameObject TargetH;
-
     GameObject parent;
+    GameObject counterObject;
+    TextMeshProUGUI counterText;
 
-    float decay_timer = 0.0f;
-    float fadeSpeed = 0.0008f;
+    int numberOfTargets;
+    int remainingTargets;
 
-    bool destroyed = false;
+    private static List<GameObject> targets = new List<GameObject>();
+    private static List<GameObject> removeList = new List<GameObject>();
 
     // Start is called before the first frame update
     void Start()
     {
         parent = transform.gameObject;
+        numberOfTargets = parent.transform.childCount;
 
-        TargetA = parent.transform.Find("TargetA").gameObject;
-        TargetB = parent.transform.Find("TargetB").gameObject;
-        TargetC = parent.transform.Find("TargetC").gameObject;
-        TargetD = parent.transform.Find("TargetD").gameObject;
-        TargetE = parent.transform.Find("TargetE").gameObject;
-        TargetF = parent.transform.Find("TargetF").gameObject;
-        TargetG = parent.transform.Find("TargetG").gameObject;
-        TargetH = parent.transform.Find("TargetH").gameObject;
+        for (int i = 0; i < numberOfTargets; i++)
+        {
+            Transform subject = parent.transform.GetChild(i);
+            GameObject subjectGO = subject.gameObject;
+            targets.Add(subjectGO);
+        }
+
+        remainingTargets = targets.Count;
+
+        counterObject = GameObject.Find("Canvas/counter");
+        counterText = counterObject.GetComponent<TextMeshProUGUI>();
+        counterText.text = "Remaining Targets: " + remainingTargets;
+        counterText.color = new Color32(0, 0, 0, 255);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (destroyed)
+        foreach(GameObject target in targets)
         {
-            decay_timer += 0.05f;
+            TargetController targetTC = target.GetComponent<TargetController>();
+            bool check = targetTC.GetCountMe();
 
-            if (decay_timer > 25)
+            if(check == true)
             {
-                Color tempcolor = TargetA.GetComponent<Renderer>().material.color;
-                tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, fadeSpeed);
-                
-                TargetA.GetComponent<Renderer>().material.color = tempcolor;
-                TargetB.GetComponent<Renderer>().material.color = tempcolor;
-                TargetC.GetComponent<Renderer>().material.color = tempcolor;
-                TargetD.GetComponent<Renderer>().material.color = tempcolor;
-                TargetE.GetComponent<Renderer>().material.color = tempcolor;
-                TargetF.GetComponent<Renderer>().material.color = tempcolor;
-                TargetG.GetComponent<Renderer>().material.color = tempcolor;
-                TargetH.GetComponent<Renderer>().material.color = tempcolor;
-
-                if (TargetA.GetComponent<Renderer>().material.color.a == 0) Destroy(gameObject);
+                removeList.Add(target);
             }
         }
+
+        if (removeList.Count > 0) DoRemoveList();
+
+        removeList.Clear();
+        remainingTargets = targets.Count;
+
+        if (remainingTargets == 0) counterText.text = "Remaining Targets: " + remainingTargets + "! Excellent work, soldier!";
+        else counterText.text = "Remaining Targets: " + remainingTargets;
     }
 
-    void OnCollisionEnter(Collision collision)
+    void DoRemoveList()
     {
-        if (collision.gameObject.tag == "Shell")
+        foreach (GameObject remove in removeList)
         {
-            TargetA.GetComponent<Rigidbody>().isKinematic = false;
-            TargetB.GetComponent<Rigidbody>().isKinematic = false;
-            TargetC.GetComponent<Rigidbody>().isKinematic = false;
-            TargetD.GetComponent<Rigidbody>().isKinematic = false;
-            TargetE.GetComponent<Rigidbody>().isKinematic = false;
-            TargetF.GetComponent<Rigidbody>().isKinematic = false;
-            TargetG.GetComponent<Rigidbody>().isKinematic = false;
-            TargetH.GetComponent<Rigidbody>().isKinematic = false;
-            destroyed = true;
+            targets.Remove(remove);
         }
     }
 }

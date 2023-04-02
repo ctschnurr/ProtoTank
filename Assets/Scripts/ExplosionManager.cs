@@ -5,8 +5,8 @@ using UnityEngine;
 public class ExplosionManager : MonoBehaviour
 {
     GameObject explosion;
-    float expandSpeed = 0.2f;
-    float fadeSpeed = 0.01f;
+    float expandSpeed = 0.7f;
+    float fadeSpeed = 0.05f;
     Vector3 scaleChange;
 
     // Start is called before the first frame update
