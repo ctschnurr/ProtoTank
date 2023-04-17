@@ -43,7 +43,7 @@ public class TurretController : MonoBehaviour
     private Quaternion _lookRotation;
     private Vector3 _direction;
 
-  float barrelRotateSpeed = 0.25f;
+    float barrelRotateSpeed = 0.25f;
 
 
     float nextY;

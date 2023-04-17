@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 1.0f;
-    public float barrelSpeed = 1.0f;
-    float rotateSpeed = 0.25f;
+    float moveSpeed = 100f;
+    float barrelSpeed = 12f;
+    float rotateSpeed = 25f;
     float throttleFactor = 2f;
     bool throttle = false;
     GameObject chassis;
@@ -55,6 +55,10 @@ public class PlayerController : MonoBehaviour
 
         respawn = transform.position;
         respawn.y += 1;
+
+        moveSpeed = moveSpeed * Time.deltaTime;
+        barrelSpeed = barrelSpeed * Time.deltaTime;
+        rotateSpeed = rotateSpeed * Time.deltaTime;
     }
 
     void barrelControl(float horizontal, float vertical)

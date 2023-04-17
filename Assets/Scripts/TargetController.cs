@@ -17,7 +17,7 @@ public class TargetController : MonoBehaviour
     GameObject parent;
 
     float decay_timer = 0.0f;
-    float fadeSpeed = 0.005f;
+    float fadeSpeed = 0.5f;
 
     bool destroyed = false;
     bool countMe = false;
@@ -35,6 +35,9 @@ public class TargetController : MonoBehaviour
         TargetF = parent.transform.Find("TargetF").gameObject;
         TargetG = parent.transform.Find("TargetG").gameObject;
         TargetH = parent.transform.Find("TargetH").gameObject;
+
+        decay_timer = decay_timer * Time.deltaTime;
+        fadeSpeed = fadeSpeed * Time.deltaTime;
     }
 
     // Update is called once per frame
@@ -44,7 +47,7 @@ public class TargetController : MonoBehaviour
         {
             decay_timer += 0.05f;
 
-            if (decay_timer > 25)
+            if (decay_timer > 10)
             {
                 Color tempcolor = TargetA.GetComponent<Renderer>().material.color;
                 tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, fadeSpeed);
