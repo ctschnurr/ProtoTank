@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        controlsScreen = GameObject.Find("Controls");
+        controlsScreen = GameObject.Find("ControlsScreen");
         controlsScreen.SetActive(false);
 
         player = GameObject.Find("Player");
@@ -50,8 +50,8 @@ public class PlayerController : MonoBehaviour
 
         lastShotTimer = Time.time;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.visible = false;
 
         respawn = transform.position;
         respawn.y += 1;

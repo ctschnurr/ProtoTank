@@ -36,6 +36,8 @@ public class TurretController : MonoBehaviour
 
     float ShootDelay = 2;
     float lastShotTimer;
+    bool facingPlayer = false;
+    bool inRange = false;
 
     State state = State.idle;
 
@@ -122,7 +124,15 @@ public class TurretController : MonoBehaviour
                 launchVelocity = Mathf.Clamp(launchVelocity, 300, 700);
                 //
 
-                if (Vector3.Distance(playerPosition, transform.position) < turretFireDistance && Vector3.Distance(playerPosition, chassisRotater.transform.position) > turretMinDistance) Fire();
+                float angle = Vector3.Angle((playerPosition - transform.position), chassisRotater.transform.forward);
+                if (angle < 5f) facingPlayer = true;
+                if (angle > 5f) facingPlayer = false;
+
+                if (Vector3.Distance(playerPosition, transform.position) < turretFireDistance && Vector3.Distance(playerPosition, chassisRotater.transform.position) > turretMinDistance) inRange = true;
+                if (Vector3.Distance(playerPosition, transform.position) > turretFireDistance || Vector3.Distance(playerPosition, chassisRotater.transform.position) < turretMinDistance) inRange = false;
+
+
+                if (facingPlayer && inRange) Fire();
                 if (Vector3.Distance(playerPosition, transform.position) > turretSightDistance) state = State.idle;
                 break;
 
