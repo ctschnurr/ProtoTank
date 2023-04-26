@@ -31,7 +31,7 @@ public class TargetManager : MonoBehaviour
 
         remainingTargets = targets.Count;
 
-        counterObject = GameObject.Find("Canvas/counter");
+        counterObject = GameObject.Find("HUD/counter");
         counterText = counterObject.GetComponent<TextMeshProUGUI>();
         counterText.text = "Remaining Targets: " + remainingTargets;
         counterText.color = new Color32(0, 0, 0, 255);
