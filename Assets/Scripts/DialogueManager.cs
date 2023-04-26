@@ -34,6 +34,8 @@ public class DialogueManager : MonoBehaviour
 
     Queue<string> dialogue;
 
+    bool running = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,7 +59,7 @@ public class DialogueManager : MonoBehaviour
         test[0] = "This is a test message!";
         test[1] = "Please disregard!";
 
-        // ShowDialogue(test);
+        // StartDialogue(test);
     }
 
     // Update is called once per frame
@@ -65,6 +67,9 @@ public class DialogueManager : MonoBehaviour
     {
         switch (state)
         {
+            case State.idle:
+                break;
+
             case State.fadeIn:
                 if (dialogueWindow.GetComponent<Image>().color.a < 0.6)
                 {
@@ -143,22 +148,27 @@ public class DialogueManager : MonoBehaviour
                     dialogueWindow.GetComponent<Image>().color = windowColor;
                 }
                 else state = State.idle;
+                running = false;
                 break;
         }
     }
 
-    public void ShowDialogue(string[] input)
+    public void StartDialogue(string[] input)
     {
-        dialogue.Clear();
-
-        foreach (string line in input)
+        if (!running)
         {
-            dialogue.Enqueue(line);
-        }
+            running = true;
+            dialogue.Clear();
 
-        string load1st = dialogue.Dequeue();
-        dialogueText.text = load1st;
-        state = State.fadeIn;
+            foreach (string line in input)
+            {
+                dialogue.Enqueue(line);
+            }
+
+            string load1st = dialogue.Dequeue();
+            dialogueText.text = load1st;
+            state = State.fadeIn;
+        }
     }
 
     public void NextPage()

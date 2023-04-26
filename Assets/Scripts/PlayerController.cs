@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
     Vector3 currentAngle;
     Vector3 nextAngle;
-    Vector3 respawn;
+    static Vector3 respawn;
 
     public float fliptimer;
     bool flipped = false;
@@ -50,8 +50,8 @@ public class PlayerController : MonoBehaviour
 
         lastShotTimer = Time.time;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
 
         respawn = transform.position;
         respawn.y += 1;
@@ -143,5 +143,10 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Tab)) controlsScreen.SetActive(true);
         if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
+    }
+
+    public static void SetRespawn(Vector3 input)
+    {
+        respawn = input;
     }
 }

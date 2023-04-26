@@ -22,10 +22,15 @@ public class TargetController : MonoBehaviour
     bool destroyed = false;
     bool countMe = false;
 
+    MissionManager manager;
+
+    public string[] dialogueStrings;
+
     // Start is called before the first frame update
     void Start()
     {
         parent = transform.gameObject;
+        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
 
         TargetA = parent.transform.Find("TargetA").gameObject;
         TargetB = parent.transform.Find("TargetB").gameObject;
@@ -80,6 +85,7 @@ public class TargetController : MonoBehaviour
             TargetH.GetComponent<Rigidbody>().isKinematic = false;
             destroyed = true;
             countMe = true;
+            manager.NextObjective(parent, dialogueStrings);
         }
     }
 
