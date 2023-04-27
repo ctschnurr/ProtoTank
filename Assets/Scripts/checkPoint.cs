@@ -73,6 +73,7 @@ public class checkPoint : MonoBehaviour
             fadeOut = false;
             GetComponent<Renderer>().material.color = savecolor;
             manager.NextObjective(checkPointObject, dialogueStrings);
+            checkPointObject.SetActive(false);
         }
 
     }

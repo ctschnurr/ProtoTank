@@ -2583,6 +2583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeOut: 0
   state: 0
+  dialogueStrings: []
 --- !u!82 &7179625118925016963
 AudioSource:
   m_ObjectHideFlags: 0

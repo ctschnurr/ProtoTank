@@ -5,7 +5,9 @@ using System;
 
 public class MissionManager : MonoBehaviour
 {
+    GameManager gameManager;
     DialogueManager dialogueManager;
+    ScreenManager screenManager;
 
     GameObject parent;
     GameObject nextCheckPoint;
@@ -24,7 +26,10 @@ public class MissionManager : MonoBehaviour
     // Mission mission = Mission.mission1;
 
     int currentMission = 0;
-    float timer = 120.0f;
+    float timer = 2;
+
+    bool missionStart = false;
+    bool missionComplete = false;
 
     // string[] dialogue;
     List<GameObject>[] missions;
@@ -32,13 +37,13 @@ public class MissionManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        dialogueManager = GameObject.Find("DialogueScreen").GetComponent<DialogueManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
+        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
         // dialogue = new string[2];
         // 
         // dialogue[0] = "This is a test message!";
         // dialogue[1] = "Please disregard!";
-
-        timer *= Time.deltaTime;
 
         parent = transform.gameObject;
 
@@ -62,7 +67,6 @@ public class MissionManager : MonoBehaviour
                 GameObject missionObjective = missionObjectiveTransform.gameObject;
 
                 missions[i].Add(missionObjective);
-                Debug.Log("Booner");
             }
         }
 
@@ -81,41 +85,37 @@ public class MissionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        List<GameObject> missionReference = missions[currentMission];
-
-        switch (currentMission)
+        if (missionStart)
         {
-            case 0:
-                // int numberOfStages = missionReference.Count;
+            if (timer > 0) timer -= Time.deltaTime;
+            if (timer < 0)
+            {
+                string message = "For your first mission, we will simply run through some exercises!";
+                screenManager.SetScreen(ScreenManager.Screen.missionStart);
+                dialogueManager.InfoBox(message);
+                missionStart = false;
+                timer = 6;
+            }
+        }
+        else if(missionComplete)
+        {
+            string[] message = new string[2];
+            message[0] = "Fantastic work! You'll be quite an asset to the company!";
+            message[1] = "Next we'll run through some more advanced manuvers!";
+            dialogueManager.StartDialogue(message);
+            if (timer > 0) timer -= Time.deltaTime;
+            if (timer < 0)
+            {
+                string message = "Click CONTINUE to move on to the next mission.";
+                screenManager.SetScreen(ScreenManager.Screen.missionComplete);
 
+                Time.timeScale = 0;
+                player.SetState(PlayerController.State.controlDisabled);
 
-
-                // if (missionStage == 0)
-                // {
-                //     timer -= Time.deltaTime;
-                // 
-                //     if (timer <= 0)
-                //     {
-                //         Array.Resize(ref dialogue, 3);
-                //         dialogue[0] = "Welcome to Mission 1, recruit!";
-                //         dialogue[1] = "Lets get ready to run through your paces.";
-                //         dialogue[2] = "Time to begin!";
-                // 
-                //         dialogueManager.StartDialogue(dialogue);
-                // 
-                //         missionStage++;
-                //         timer = 120.0f;
-                //     }
-                // }
-                // else if (missionStage == 1)
-                // {
-                //     if (checkPoint1) timer -= Time.deltaTime;
-                // 
-                // 
-                // 
-                // }
-
-                break;
+                dialogueManager.InfoBox(message);
+                missionComplete = false;
+                currentMission++;
+            }
         }
     }
 
@@ -124,7 +124,6 @@ public class MissionManager : MonoBehaviour
         timer = time;
         while (timer > 0)
         {
-            Debug.Log(timer);
             timer -= Time.deltaTime;
         }
     }
@@ -138,15 +137,21 @@ public class MissionManager : MonoBehaviour
     public void NextObjective(GameObject input, string[] dialogue)
     {
         reference = input;
-        reference.SetActive(false);
+        //reference.SetActive(false);
         missions[currentMission].Remove(reference);
+
+        dialogueManager.StartDialogue(dialogue);
 
         if (missions[currentMission].Count != 0)
         {
             List<GameObject> refList = missions[currentMission];
             refList[0].SetActive(true);
-
-            dialogueManager.StartDialogue(dialogue);
         }
+        else missionComplete = true;
+    }
+
+    public void StartMission()
+    {
+        missionStart = true;
     }
 }

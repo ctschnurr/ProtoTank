@@ -11,6 +11,7 @@ public class DialogueManager : MonoBehaviour
     Color windowColor;
 
     TextMeshProUGUI dialogueText;
+    GameObject dialogueTextObject;
     Color textColor;
 
     public enum State
@@ -27,24 +28,36 @@ public class DialogueManager : MonoBehaviour
     public State state = State.idle;
 
     float fadeSpeed = 0.5f;
-    float sizeSpeed = 400f;
+    float sizeSpeed = 500f;
 
-    public Vector2 maxSize = new Vector2(1000, 300);
+    Vector2 sizeReference;
+    Vector2 maxSize = new Vector2(800, 300);
+    Vector2 infoSize = new Vector2(800, 200);
     Vector2 minSize = new Vector2(50, 50);
+
+    Vector2 infoPosition = new Vector2(0, 400);
+    Vector2 dialoguePosition = new Vector2(0, 50);
+
 
     Queue<string> dialogue;
 
     bool running = false;
 
+    float timer = 3f;
+    float timerReset = 3f;
+
+    bool timed = false;
+
     // Start is called before the first frame update
     void Start()
     {
-        dialogueWindow = GameObject.Find("DialogueScreen/DialogueWindow");
+        dialogueWindow = GameObject.Find("DialogueManager/DialogueWindow");
         windowColor = dialogueWindow.GetComponent<Image>().color;
         windowColor.a = 0f;
         dialogueWindow.GetComponent<Image>().color = windowColor;
 
-        dialogueText = GameObject.Find("DialogueScreen/DialogueText").GetComponent<TextMeshProUGUI>();
+        dialogueTextObject = GameObject.Find("DialogueManager/DialogueText");
+        dialogueText = GameObject.Find("DialogueManager/DialogueText").GetComponent<TextMeshProUGUI>();
         textColor = dialogueText.color;
         textColor.a = 0f;
         dialogueText.color = textColor;
@@ -59,7 +72,7 @@ public class DialogueManager : MonoBehaviour
         test[0] = "This is a test message!";
         test[1] = "Please disregard!";
 
-        // StartDialogue(test);
+        // timer *= Time.deltaTime;
     }
 
     // Update is called once per frame
@@ -83,19 +96,19 @@ public class DialogueManager : MonoBehaviour
             case State.open:
                 Vector2 tempSize = dialogueWindow.GetComponent<RectTransform>().sizeDelta;
 
-                if (tempSize.x <= maxSize.x)
+                if (tempSize.x <= sizeReference.x)
                 {
                     tempSize.x = tempSize.x + sizeSpeed;
                     dialogueWindow.GetComponent<RectTransform>().sizeDelta = tempSize;
                 }
 
-                else if (tempSize.y <= maxSize.y)
+                else if (tempSize.y <= sizeReference.y)
                 {
                     tempSize.y = tempSize.y + (sizeSpeed * .5f);
                     dialogueWindow.GetComponent<RectTransform>().sizeDelta = tempSize;
                 }
 
-                if (tempSize.y >= maxSize.y) state = State.textIn;
+                if (tempSize.y >= sizeReference.y) state = State.textIn;
 
                 break;
 
@@ -106,10 +119,19 @@ public class DialogueManager : MonoBehaviour
                     textColor.a = Mathf.MoveTowards(textColor.a, 1f, fadeSpeed);
                     dialogueText.color = textColor;
                 }
+                else
+                {
+                    switch (timed)
+                    {
+                        case false:
+                            break;
 
-                // - build in mechanic so dialogue process continues until audio clip is done, or player presses skip
-
-                // else state = State.textOut;
+                        case true:
+                            if (timer > 0) timer -= Time.deltaTime;
+                            if (timer < 0) NextPage();
+                            break;
+                    }
+                }
                 break;
 
             case State.textOut:
@@ -157,6 +179,11 @@ public class DialogueManager : MonoBehaviour
     {
         if (!running)
         {
+            dialogueWindow.GetComponent<RectTransform>().anchoredPosition = dialoguePosition;
+            dialogueTextObject.GetComponent<RectTransform>().anchoredPosition = dialoguePosition;
+
+            sizeReference = maxSize;
+            timed = true;
             running = true;
             dialogue.Clear();
 
@@ -171,16 +198,43 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    public void InfoBox(string input)
+    {
+        if (!running)
+        {
+            dialogueWindow.GetComponent<RectTransform>().anchoredPosition = infoPosition;
+            dialogueTextObject.GetComponent<RectTransform>().anchoredPosition = infoPosition;
+            sizeReference = infoSize;
+            timed = false;
+            running = true;
+
+            dialogueText.text = input;
+            state = State.fadeIn;
+        }
+    }
+
     public void NextPage()
     {
         if(dialogue.Count == 0)
         {
             state = State.textOut;
+            timer = 6f;
             return;
         }
 
         string line = dialogue.Dequeue();
         dialogueText.text = line;
+        timer = timerReset;
+    }
+
+    public void ClearDialogue()
+    {
+        state = State.textOut;
+    }
+
+    public State GetState()
+    {
+        return state;
     }
 
 }
