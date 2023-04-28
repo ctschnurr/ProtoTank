@@ -29,6 +29,7 @@ public class MissionManager : MonoBehaviour
     // Mission mission = Mission.mission1;
 
     int currentMission = 0;
+    public int stage = 0;
     float timer = 2;
 
     bool missionStart = false;
@@ -84,22 +85,39 @@ public class MissionManager : MonoBehaviour
     {
         if (missionStart)
         {
-            if (timer > 0) timer -= Time.deltaTime;
-            if (timer < 0)
+            switch (stage)
             {
-                string message = "For your first mission, we will simply run through some exercises!";
-                screenManager.SetScreen(ScreenManager.Screen.missionStart);
-                dialogueManager.InfoBox(message);
-                missionStart = false;
-                timer = 8;
+                case 0:
+                    if (timer > 0) timer -= Time.deltaTime;
+                    if (timer < 0)
+                    {
+                        NextStage();
+                        string message = "For your first mission, we will simply run through some exercises!";
+                        screenManager.SetScreen(ScreenManager.Screen.missionStart);
+                        dialogueManager.InfoBox(message);
+                        timer = 4;
+                    }
+                    break;
+
+                case 1:
+                    // basically just waiting for next stage
+                    break;
+
+                case 2:
+                    if (timer > 0) timer -= Time.deltaTime;
+                    if (timer < 0)
+                    {
+                        screenManager.SetScreen(ScreenManager.Screen.HUD);
+                        missionStart = false;
+                        timer = 10;
+                    }
+                    break;
+
             }
+
         }
         else if(missionComplete)
         {
-            // string[] message = new string[2];
-            // message[0] = "Fantastic work! You'll be quite an asset to the company!";
-            // message[1] = "Next we'll run through some more advanced manuvers!";
-            // dialogueManager.StartDialogue(message);
             if (timer > 0) timer -= Time.deltaTime;
             if (timer < 0)
             {
@@ -147,6 +165,10 @@ public class MissionManager : MonoBehaviour
             List<GameObject> refList = missions[currentMission];
             refList[0].SetActive(true);
         }
+        else
+        {
+            missionComplete = true;
+        }
     }
 
     public void StartMission()
@@ -157,5 +179,10 @@ public class MissionManager : MonoBehaviour
     public static void EndMission(object sender, EventArgs e)
     {
         missionComplete = true;
+    }
+
+    public void NextStage()
+    {
+        stage++;
     }
 }

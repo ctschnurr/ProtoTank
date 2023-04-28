@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     GameManager gameManager;
+    MissionManager missionManager;
 
     public enum State
     {
@@ -22,6 +23,10 @@ public class PlayerController : MonoBehaviour
     GameObject chassis;
     GameObject barrel;
     GameObject player;
+
+    GameObject checkpointPointer;
+    public bool checkpointerOn = false;
+    Vector3 pointerTarget;
 
     GameObject controlsScreen;
 
@@ -52,6 +57,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+
+        checkpointPointer = GameObject.Find("Player/ChassisRotater/Main Camera/WaypointPointer");
 
         controlsScreen = GameObject.Find("ControlsScreen");
         controlsScreen.SetActive(false);
@@ -161,6 +169,15 @@ public class PlayerController : MonoBehaviour
                 if (Input.GetKey(KeyCode.Tab)) controlsScreen.SetActive(true);
                 if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
                 return;
+
+                if (checkpointerOn)
+                {
+                    GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
+                    pointerTarget = pointerTargetObject.transform.position;
+                    Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
+                    Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
+                    checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
+                }
         }
 
 

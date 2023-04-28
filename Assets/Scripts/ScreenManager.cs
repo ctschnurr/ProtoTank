@@ -8,6 +8,7 @@ using System;
 public class ScreenManager : MonoBehaviour
 {
     GameManager gameManager;
+    MissionManager missionManager;
 
     public enum State
     {
@@ -27,10 +28,12 @@ public class ScreenManager : MonoBehaviour
         title,
         pause,
         missionStart,
-        missionComplete
+        missionComplete,
+        HUD
     }
 
     public State state = State.fadeIn;
+    Screen prevScreen = Screen.title;
     Screen currentScreen = Screen.title;
     GameObject screenObject;
 
@@ -38,6 +41,7 @@ public class ScreenManager : MonoBehaviour
     GameObject pauseScreen;
     GameObject missionStart;
     GameObject missionComplete;
+    GameObject hud;
 
     GameObject blackScreen;
     Color blackScreenColor;
@@ -49,10 +53,13 @@ public class ScreenManager : MonoBehaviour
     float fadeSpeed = 0.8f;
     float shrinkSpeed = 0.80f;
 
+    bool missionStage = false;
+
     // Start is called before the first frame update
     public void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
 
         blackScreen = GameObject.Find("BlackScreen/Panel");
         blackScreenColor = blackScreen.GetComponent<Image>().color;
@@ -77,6 +84,9 @@ public class ScreenManager : MonoBehaviour
 
         missionComplete = GameObject.Find("MissionCompleteScreen");
         missionComplete.SetActive(false);
+
+        hud = GameObject.Find("HUD");
+        hud.SetActive(false);
 
     }
 
@@ -137,6 +147,12 @@ public class ScreenManager : MonoBehaviour
                 }
                 else
                 {
+                    if (missionStage)
+                    {
+                        missionManager.NextStage();
+                        missionStage = false;
+                    }
+
                     screenObject.SetActive(false);
                     if (background.activeSelf == true) state = State.fadeOutBackground;
                     else state = State.idle;
@@ -185,6 +201,7 @@ public class ScreenManager : MonoBehaviour
 
     public void SetScreen(Screen input)
     {
+        prevScreen = currentScreen;
         if (state == State.idle)
         {
             switch (input)
@@ -209,11 +226,19 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.pause;
                     screenObject = missionStart;
                     state = State.screenAppear;
+                    missionStage = true;
                     break;
 
                 case Screen.missionComplete:
                     currentScreen = Screen.pause;
                     screenObject = missionComplete;
+                    state = State.screenAppear;
+                    missionStage = true;
+                    break;
+
+                case Screen.HUD:
+                    currentScreen = Screen.HUD;
+                    screenObject = hud;
                     state = State.screenAppear;
                     break;
             }
