@@ -26,7 +26,8 @@ public class ScreenManager : MonoBehaviour
         clear,
         title,
         pause,
-        missionStart
+        missionStart,
+        missionComplete
     }
 
     public State state = State.fadeIn;
@@ -91,7 +92,7 @@ public class ScreenManager : MonoBehaviour
                 if (blackScreen.GetComponent<Image>().color.a > 0)
                 {
                     blackScreenColor = blackScreen.GetComponent<Image>().color;
-                    blackScreenColor.a = Mathf.MoveTowards(blackScreenColor.a, 0f, fadeSpeed / 2);
+                    blackScreenColor.a = Mathf.MoveTowards(blackScreenColor.a, 0f, (fadeSpeed / 4));
                     blackScreen.GetComponent<Image>().color = blackScreenColor;
                 }
                 else

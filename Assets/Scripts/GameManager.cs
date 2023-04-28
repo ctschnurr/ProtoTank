@@ -7,16 +7,15 @@ public class GameManager : MonoBehaviour
     ScreenManager screenManager;
     PlayerController player;
     MissionManager missionManager;
+
     DialogueManager dialogueManager;
-
-
-
-
-
 
     // Start is called before the first frame update
     void Start()
     {
+        // var dialogueTrick = new DialogueManager();
+        // dialogueManager.OnDialogueEnd += MissionManager.EndMission;
+
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();

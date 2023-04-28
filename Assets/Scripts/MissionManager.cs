@@ -5,9 +5,12 @@ using System;
 
 public class MissionManager : MonoBehaviour
 {
-    GameManager gameManager;
     DialogueManager dialogueManager;
+
+
+    GameManager gameManager;
     ScreenManager screenManager;
+    PlayerController player;
 
     GameObject parent;
     GameObject nextCheckPoint;
@@ -29,7 +32,7 @@ public class MissionManager : MonoBehaviour
     float timer = 2;
 
     bool missionStart = false;
-    bool missionComplete = false;
+    static bool missionComplete = false;
 
     // string[] dialogue;
     List<GameObject>[] missions;
@@ -40,15 +43,9 @@ public class MissionManager : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
-        // dialogue = new string[2];
-        // 
-        // dialogue[0] = "This is a test message!";
-        // dialogue[1] = "Please disregard!";
+        player = GameObject.Find("Player").GetComponent<PlayerController>();
 
         parent = transform.gameObject;
-
-        // setup of Mission 1 objects
-        //mission1Objects = new List<GameObject>();
 
         numberOfMissions = parent.transform.childCount;
         missions = new List<GameObject>[numberOfMissions];
@@ -94,25 +91,28 @@ public class MissionManager : MonoBehaviour
                 screenManager.SetScreen(ScreenManager.Screen.missionStart);
                 dialogueManager.InfoBox(message);
                 missionStart = false;
-                timer = 6;
+                timer = 8;
             }
         }
         else if(missionComplete)
         {
-            string[] message = new string[2];
-            message[0] = "Fantastic work! You'll be quite an asset to the company!";
-            message[1] = "Next we'll run through some more advanced manuvers!";
-            dialogueManager.StartDialogue(message);
+            // string[] message = new string[2];
+            // message[0] = "Fantastic work! You'll be quite an asset to the company!";
+            // message[1] = "Next we'll run through some more advanced manuvers!";
+            // dialogueManager.StartDialogue(message);
             if (timer > 0) timer -= Time.deltaTime;
             if (timer < 0)
             {
-                string message = "Click CONTINUE to move on to the next mission.";
+                string message2 = "Click CONTINUE to move on to the next mission.";
                 screenManager.SetScreen(ScreenManager.Screen.missionComplete);
 
                 Time.timeScale = 0;
                 player.SetState(PlayerController.State.controlDisabled);
 
-                dialogueManager.InfoBox(message);
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+
+                dialogueManager.InfoBox(message2);
                 missionComplete = false;
                 currentMission++;
             }
@@ -147,11 +147,15 @@ public class MissionManager : MonoBehaviour
             List<GameObject> refList = missions[currentMission];
             refList[0].SetActive(true);
         }
-        else missionComplete = true;
     }
 
     public void StartMission()
     {
         missionStart = true;
+    }
+
+    public static void EndMission(object sender, EventArgs e)
+    {
+        missionComplete = true;
     }
 }

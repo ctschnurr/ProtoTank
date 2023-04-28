@@ -5,8 +5,12 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
+// public delegate void DialogueEventHandler();
+
 public class DialogueManager : MonoBehaviour
 {
+    public event EventHandler OnDialogueEnd;
+
     GameObject dialogueWindow;
     Color windowColor;
 
@@ -169,7 +173,11 @@ public class DialogueManager : MonoBehaviour
                     windowColor.a = Mathf.MoveTowards(windowColor.a, 0f, fadeSpeed);
                     dialogueWindow.GetComponent<Image>().color = windowColor;
                 }
-                else state = State.idle;
+                else
+                {
+                    DialogueEnd();
+                    state = State.idle;
+                }
                 running = false;
                 break;
         }
@@ -218,7 +226,7 @@ public class DialogueManager : MonoBehaviour
         if(dialogue.Count == 0)
         {
             state = State.textOut;
-            timer = 6f;
+            timer = timerReset;
             return;
         }
 
@@ -235,6 +243,14 @@ public class DialogueManager : MonoBehaviour
     public State GetState()
     {
         return state;
+    }
+
+    public void DialogueEnd()
+    {
+        if (OnDialogueEnd != null)
+        {
+            OnDialogueEnd(this, EventArgs.Empty);
+        }
     }
 
 }
