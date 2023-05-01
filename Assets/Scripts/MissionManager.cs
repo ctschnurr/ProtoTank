@@ -5,12 +5,10 @@ using System;
 
 public class MissionManager : MonoBehaviour
 {
-    DialogueManager dialogueManager;
-
-
-    GameManager gameManager;
-    ScreenManager screenManager;
-    PlayerController player;
+    static DialogueManager dialogueManager;
+    static GameManager gameManager;
+    static ScreenManager screenManager;
+    static PlayerController player;
 
     GameObject parent;
     GameObject nextCheckPoint;
@@ -28,12 +26,11 @@ public class MissionManager : MonoBehaviour
 
     // Mission mission = Mission.mission1;
 
-    int currentMission = 0;
-    public int stage = 0;
-    float timer = 2;
+    static int currentMission = 0;
+    static int stage = 0;
+    static float timer = 2;
 
-    bool missionStart = false;
-    static bool missionComplete = false;
+    static string[] output;
 
     // string[] dialogue;
     List<GameObject>[] missions;
@@ -77,63 +74,57 @@ public class MissionManager : MonoBehaviour
         }
         //-----
 
+        DialogueManager.OnDialogueEnd += NextStage;
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (missionStart)
+
+    }
+
+    public static void AdvanceMission()
+    {
+        switch (stage)
         {
-            switch (stage)
-            {
-                case 0:
-                    if (timer > 0) timer -= Time.deltaTime;
-                    if (timer < 0)
-                    {
-                        NextStage();
-                        string message = "For your first mission, we will simply run through some exercises!";
-                        screenManager.SetScreen(ScreenManager.Screen.missionStart);
-                        dialogueManager.InfoBox(message);
-                        timer = 4;
-                    }
-                    break;
+            case 0:
+                output = new string[2];
+                output[0] = "missionStart";
+                output[1] = "For your first mission, we will simply run through some exercises!";
+                screenManager.SetScreen(output);
+                // dialogueManager.InfoBox(message);
+                timer = 3;
+                break;
 
-                case 1:
-                    // basically just waiting for next stage
-                    break;
+            case 1:
+                output = new string[1];
+                output[0] = "HUD";
+                screenManager.SetScreen(output);
+                timer = 10;
+                break;
 
-                case 2:
-                    if (timer > 0) timer -= Time.deltaTime;
-                    if (timer < 0)
-                    {
-                        screenManager.SetScreen(ScreenManager.Screen.HUD);
-                        missionStart = false;
-                        timer = 10;
-                    }
-                    break;
+            case 99:
+                if (timer > 0) timer -= Time.deltaTime;
+                if (timer < 0)
+                {
+                    string message2 = "Click CONTINUE to move on to the next mission.";
 
-            }
+                    output = new string[2];
+                    output[0] = "missionComplete";
+                    output[1] = "Click CONTINUE to move on to the next mission.";
+                    screenManager.SetScreen(output);
 
-        }
-        else if(missionComplete)
-        {
-            if (timer > 0) timer -= Time.deltaTime;
-            if (timer < 0)
-            {
-                string message2 = "Click CONTINUE to move on to the next mission.";
-                screenManager.SetScreen(ScreenManager.Screen.missionComplete);
+                    Time.timeScale = 0;
+                    player.SetState(PlayerController.State.controlDisabled);
 
-                Time.timeScale = 0;
-                player.SetState(PlayerController.State.controlDisabled);
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
 
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-
-                dialogueManager.InfoBox(message2);
-                missionComplete = false;
-                currentMission++;
-            }
+                    dialogueManager.InfoBox(message2);
+                    currentMission++;
+                }
+                break;
         }
     }
 
@@ -158,6 +149,11 @@ public class MissionManager : MonoBehaviour
         //reference.SetActive(false);
         missions[currentMission].Remove(reference);
 
+        output = new string[dialogue.Length + 1];
+        output[0] = "dialogue";
+
+        Array.Copy(dialogue, 0, output, 1, output.Length);
+
         dialogueManager.StartDialogue(dialogue);
 
         if (missions[currentMission].Count != 0)
@@ -167,22 +163,14 @@ public class MissionManager : MonoBehaviour
         }
         else
         {
-            missionComplete = true;
+            stage = 99;
+            AdvanceMission();
         }
     }
 
-    public void StartMission()
-    {
-        missionStart = true;
-    }
-
-    public static void EndMission(object sender, EventArgs e)
-    {
-        missionComplete = true;
-    }
-
-    public void NextStage()
+    static void NextStage()
     {
         stage++;
+        AdvanceMission();
     }
 }

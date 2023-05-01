@@ -9,6 +9,7 @@ public class ScreenManager : MonoBehaviour
 {
     GameManager gameManager;
     MissionManager missionManager;
+    DialogueManager dialogueManager;
 
     public enum State
     {
@@ -33,8 +34,8 @@ public class ScreenManager : MonoBehaviour
     }
 
     public State state = State.fadeIn;
-    Screen prevScreen = Screen.title;
-    Screen currentScreen = Screen.title;
+    public Screen inputScreen = Screen.title;
+    public Screen currentScreen = Screen.title;
     GameObject screenObject;
 
     GameObject titleScreen;
@@ -53,13 +54,18 @@ public class ScreenManager : MonoBehaviour
     float fadeSpeed = 0.8f;
     float shrinkSpeed = 0.80f;
 
-    bool missionStage = false;
+    bool dialogueClear = true;
+    string[] messageArray;
+    string message;
+
+    Queue<string[]> screenQueue;
 
     // Start is called before the first frame update
     public void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
 
         blackScreen = GameObject.Find("BlackScreen/Panel");
         blackScreenColor = blackScreen.GetComponent<Image>().color;
@@ -88,6 +94,7 @@ public class ScreenManager : MonoBehaviour
         hud = GameObject.Find("HUD");
         hud.SetActive(false);
 
+        screenQueue = new Queue<string[]>();
     }
 
     // Update is called once per frame
@@ -147,12 +154,6 @@ public class ScreenManager : MonoBehaviour
                 }
                 else
                 {
-                    if (missionStage)
-                    {
-                        missionManager.NextStage();
-                        missionStage = false;
-                    }
-
                     screenObject.SetActive(false);
                     if (background.activeSelf == true) state = State.fadeOutBackground;
                     else state = State.idle;
@@ -192,6 +193,17 @@ public class ScreenManager : MonoBehaviour
                 }
                 break;
         }
+
+        if (screenQueue.Count != 0 && state == State.idle)
+        {
+            string[] next = screenQueue.Dequeue();
+            SetScreen(next);
+        }
+    }
+
+    void CheckQueue()
+    {
+
     }
 
     public State GetState()
@@ -199,12 +211,26 @@ public class ScreenManager : MonoBehaviour
         return state;
     }
 
-    public void SetScreen(Screen input)
+    //public void SetScreen(Screen input, string message)
+    public void SetScreen(string[] input)
     {
-        prevScreen = currentScreen;
-        if (state == State.idle)
+        if (state != State.idle) screenQueue.Enqueue(input);
+        else
         {
-            switch (input)
+            string screenDat = input[0];
+            inputScreen = (Screen)Enum.Parse(typeof(Screen), screenDat);
+
+            if (input.Length == 2)
+            {
+                message = input[1];
+            }
+            else if (input.Length > 2)
+            {
+                messageArray = new string[input.Length - 1];
+                Array.Copy(input, 1, messageArray, 0, (input.Length - 1));
+            }
+
+            switch (inputScreen)
             {
                 case Screen.clear:
                     state = State.screenDisappear;
@@ -226,14 +252,13 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.pause;
                     screenObject = missionStart;
                     state = State.screenAppear;
-                    missionStage = true;
+                    dialogueManager.InfoBox(message);
                     break;
 
                 case Screen.missionComplete:
                     currentScreen = Screen.pause;
                     screenObject = missionComplete;
                     state = State.screenAppear;
-                    missionStage = true;
                     break;
 
                 case Screen.HUD:
@@ -241,7 +266,14 @@ public class ScreenManager : MonoBehaviour
                     screenObject = hud;
                     state = State.screenAppear;
                     break;
+
+                default:
+                    Debug.Log("screen didn't parse properly");
+                    break;
             }
+
+
         }
+
     }
 }

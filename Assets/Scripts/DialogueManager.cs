@@ -9,8 +9,6 @@ using System;
 
 public class DialogueManager : MonoBehaviour
 {
-    public event EventHandler OnDialogueEnd;
-
     GameObject dialogueWindow;
     Color windowColor;
 
@@ -51,6 +49,9 @@ public class DialogueManager : MonoBehaviour
     float timerReset = 3f;
 
     bool timed = false;
+
+    public delegate void DialogueEndAction();
+    public static event DialogueEndAction OnDialogueEnd;
 
     // Start is called before the first frame update
     void Start()
@@ -249,7 +250,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (OnDialogueEnd != null)
         {
-            OnDialogueEnd(this, EventArgs.Empty);
+            OnDialogueEnd();
         }
     }
 

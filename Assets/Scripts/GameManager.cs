@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,15 +14,15 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // var dialogueTrick = new DialogueManager();
-        // dialogueManager.OnDialogueEnd += MissionManager.EndMission;
-
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
 
         player = GameObject.Find("Player").GetComponent<PlayerController>();
         player.SetState(PlayerController.State.controlDisabled);
+
+        // DialogueManager.OnDialogueEnd += ReceiveEvent; // like saying 'start listening'
+        // DialogueManager.OnDialogueEnd -= ReceiveEvent; // like saying 'stop listening'
     }
 
     // Update is called once per frame
@@ -30,10 +31,17 @@ public class GameManager : MonoBehaviour
         
     }
 
+    static void ReceiveEvent()
+    {
+        Debug.Log("Event Received!");
+    }
+
     public void StartGame()
     {
-        screenManager.SetScreen(ScreenManager.Screen.clear);
-        missionManager.StartMission();
+        string[] output = new string[1];
+        output[0] = "clear";
+        screenManager.SetScreen(output);
+        MissionManager.AdvanceMission();
     }
 
     public void PauseGame()
@@ -42,7 +50,9 @@ public class GameManager : MonoBehaviour
         {
             Time.timeScale = 0;
             player.SetState(PlayerController.State.controlDisabled);
-            screenManager.SetScreen(ScreenManager.Screen.pause);
+            string[] output = new string[1];
+            output[0] = "pause";
+            screenManager.SetScreen(output);
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -55,7 +65,9 @@ public class GameManager : MonoBehaviour
         {
             Time.timeScale = 1;
             player.SetState(PlayerController.State.controlEnabled);
-            screenManager.SetScreen(ScreenManager.Screen.clear);
+            string[] output = new string[1];
+            output[0] = "clear";
+            screenManager.SetScreen(output);
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

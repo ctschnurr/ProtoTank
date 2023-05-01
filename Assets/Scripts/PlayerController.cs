@@ -170,14 +170,14 @@ public class PlayerController : MonoBehaviour
                 if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
                 return;
 
-                if (checkpointerOn)
-                {
-                    GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
-                    pointerTarget = pointerTargetObject.transform.position;
-                    Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
-                    Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
-                    checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
-                }
+                // if (checkpointerOn)
+                // {
+                //     GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
+                //     pointerTarget = pointerTargetObject.transform.position;
+                //     Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
+                //     Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
+                //     checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
+                // }
         }
 
 
