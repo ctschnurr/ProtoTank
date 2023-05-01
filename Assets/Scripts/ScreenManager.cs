@@ -20,7 +20,8 @@ public class ScreenManager : MonoBehaviour
         screenDisappear,
         fadeOutBackground,
         close,
-        fadeOut
+        fadeOut,
+        dialogue
     }
 
     public enum Screen
@@ -30,7 +31,8 @@ public class ScreenManager : MonoBehaviour
         pause,
         missionStart,
         missionComplete,
-        HUD
+        HUD,
+        dialogue
     }
 
     public State state = State.fadeIn;
@@ -95,6 +97,8 @@ public class ScreenManager : MonoBehaviour
         hud.SetActive(false);
 
         screenQueue = new Queue<string[]>();
+
+        DialogueManager.OnDialogueEnd += DialogueOver;
     }
 
     // Update is called once per frame
@@ -201,9 +205,9 @@ public class ScreenManager : MonoBehaviour
         }
     }
 
-    void CheckQueue()
+    void DialogueOver()
     {
-
+        if (state == State.dialogue) state = State.idle;
     }
 
     public State GetState()
@@ -259,12 +263,19 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.pause;
                     screenObject = missionComplete;
                     state = State.screenAppear;
+                    dialogueManager.InfoBox(message);
                     break;
 
                 case Screen.HUD:
                     currentScreen = Screen.HUD;
                     screenObject = hud;
                     state = State.screenAppear;
+                    break;
+
+                case Screen.dialogue:
+                    state = State.dialogue;
+                    currentScreen = Screen.dialogue;
+                    dialogueManager.StartDialogue(messageArray);
                     break;
 
                 default:

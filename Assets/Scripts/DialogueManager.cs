@@ -33,7 +33,7 @@ public class DialogueManager : MonoBehaviour
     float sizeSpeed = 500f;
 
     Vector2 sizeReference;
-    Vector2 maxSize = new Vector2(800, 300);
+    Vector2 maxSize = new Vector2(800, 200);
     Vector2 infoSize = new Vector2(800, 200);
     Vector2 minSize = new Vector2(50, 50);
 
