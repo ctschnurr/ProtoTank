@@ -93,6 +93,12 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.identity;
     }
 
+    public void Reset()
+    {
+        transform.position = reset;
+        transform.rotation = Quaternion.identity;
+    }
+
     // Update is called once per frame
     void Update()
     {

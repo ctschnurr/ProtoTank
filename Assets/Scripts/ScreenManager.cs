@@ -32,7 +32,8 @@ public class ScreenManager : MonoBehaviour
         missionStart,
         missionComplete,
         HUD,
-        dialogue
+        dialogue,
+        black
     }
 
     public State state = State.fadeIn;
@@ -61,6 +62,9 @@ public class ScreenManager : MonoBehaviour
     string message;
 
     Queue<string[]> screenQueue;
+
+    public delegate void FadeOutCompleteAction();
+    public static event FadeOutCompleteAction OnFadeOutComplete;
 
     // Start is called before the first frame update
     public void Start()
@@ -194,6 +198,7 @@ public class ScreenManager : MonoBehaviour
                 else
                 {
                     state = State.idle;
+                    FadeOutComplete();
                 }
                 break;
         }
@@ -262,20 +267,26 @@ public class ScreenManager : MonoBehaviour
                 case Screen.missionComplete:
                     currentScreen = Screen.pause;
                     screenObject = missionComplete;
-                    state = State.screenAppear;
+                    state = State.fadeInBackground;
                     dialogueManager.InfoBox(message);
                     break;
 
                 case Screen.HUD:
                     currentScreen = Screen.HUD;
                     screenObject = hud;
-                    state = State.screenAppear;
+                    if (hud.activeSelf == false) state = State.screenAppear;
+                    else state = State.screenDisappear;
                     break;
 
                 case Screen.dialogue:
                     state = State.dialogue;
                     currentScreen = Screen.dialogue;
                     dialogueManager.StartDialogue(messageArray);
+                    break;
+
+                case Screen.black:
+                    state = State.fadeOut;
+                    currentScreen = Screen.black;
                     break;
 
                 default:
@@ -286,5 +297,13 @@ public class ScreenManager : MonoBehaviour
 
         }
 
+    }
+
+    public void FadeOutComplete()
+    {
+        if (OnFadeOutComplete != null)
+        {
+            OnFadeOutComplete();
+        }
     }
 }

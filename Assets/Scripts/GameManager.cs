@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
         string[] output = new string[1];
         output[0] = "clear";
         screenManager.SetScreen(output);
-        MissionManager.AdvanceMission();
+        MissionManager.StartMission();
     }
 
     public void PauseGame()
@@ -84,8 +84,4 @@ public class GameManager : MonoBehaviour
         Application.Quit();
     }
 
-    public void NextMission()
-    {
-
-    }
 }
