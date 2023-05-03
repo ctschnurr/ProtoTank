@@ -49,6 +49,7 @@ public class DialogueManager : MonoBehaviour
     float timerReset = 3f;
 
     bool timed = false;
+    bool skip = false;
 
     public delegate void DialogueEndAction();
     public static event DialogueEndAction OnDialogueEnd;
@@ -132,8 +133,17 @@ public class DialogueManager : MonoBehaviour
                             break;
 
                         case true:
-                            if (timer > 0) timer -= Time.deltaTime;
-                            if (timer < 0) NextPage();
+                            if (skip)
+                            {
+                                timer = timerReset;
+                                NextPage();
+                                skip = false;
+                            }
+                            else
+                            {
+                                if (timer > 0) timer -= Time.deltaTime;
+                                if (timer < 0) NextPage();
+                            }
                             break;
                     }
                 }
@@ -251,6 +261,14 @@ public class DialogueManager : MonoBehaviour
         if (OnDialogueEnd != null)
         {
             OnDialogueEnd();
+        }
+    }
+
+    public void SetSkip()
+    {
+        if (state == State.textIn)
+        {
+            skip = true;
         }
     }
 

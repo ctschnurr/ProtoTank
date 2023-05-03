@@ -198,7 +198,7 @@ public class ScreenManager : MonoBehaviour
                 else
                 {
                     state = State.idle;
-                    FadeOutComplete();
+                    //FadeOutComplete();
                 }
                 break;
         }
@@ -220,7 +220,6 @@ public class ScreenManager : MonoBehaviour
         return state;
     }
 
-    //public void SetScreen(Screen input, string message)
     public void SetScreen(string[] input)
     {
         if (state != State.idle) screenQueue.Enqueue(input);
@@ -242,6 +241,11 @@ public class ScreenManager : MonoBehaviour
             switch (inputScreen)
             {
                 case Screen.clear:
+                    if (titleScreen.activeSelf == true) screenObject = titleScreen;
+                    else if(pauseScreen.activeSelf == true) screenObject = pauseScreen;
+                    else if(missionStart.activeSelf == true) screenObject = missionStart;
+                    else if(missionComplete.activeSelf == true) screenObject = missionComplete;
+                    else if(hud.activeSelf == true) screenObject = hud;
                     state = State.screenDisappear;
                     return;
 
@@ -285,8 +289,9 @@ public class ScreenManager : MonoBehaviour
                     break;
 
                 case Screen.black:
-                    state = State.fadeOut;
                     currentScreen = Screen.black;
+                    if (blackScreen.activeSelf == false) state = State.fadeOut;
+                    else state = State.fadeIn;
                     break;
 
                 default:

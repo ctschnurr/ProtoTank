@@ -10,7 +10,7 @@ public class MissionManager : MonoBehaviour
     static ScreenManager screenManager;
     static PlayerController player;
 
-    int endMissionDelay = 15;
+    int endMissionDelay = 3;
 
     GameObject parent;
     GameObject nextCheckPoint;
@@ -75,7 +75,7 @@ public class MissionManager : MonoBehaviour
         //-----
 
         DialogueManager.OnDialogueEnd += NextStage;
-        ScreenManager.OnFadeOutComplete += AdvanceMission;
+        // ScreenManager.OnFadeOutComplete += AdvanceMission;
 
     }
 
@@ -114,15 +114,19 @@ public class MissionManager : MonoBehaviour
                 case 0:
                     output = new string[2];
                     output[0] = "missionStart";
-                    output[1] = "For your first mission, we will simply run through some exercises!";
+                    output[1] = "Mission " + (currentMission +1) + ": Lets run through some exercises!";
                     screenManager.SetScreen(output);
                     timer = 1;
+
+                    stage++;
                     break;
 
                 case 1:
                     output = new string[1];
                     output[0] = "HUD";
                     screenManager.SetScreen(output);
+                    player.TogglePointer();
+
                     missionStart = false;
                     break;
             }
@@ -151,39 +155,34 @@ public class MissionManager : MonoBehaviour
                     missionEnd = false;
                     break;
             }
+
         }
 
         if (missionNext)
         {
 
-            player.Reset();
+            switch (stage)
+            {
+                case 0:
+                    Debug.Log("Reset");
+                    player.Reset();
+                    currentMission++;
+                    stage++;
+                    AdvanceMission();
+                    break;
 
-            currentMission++;
+                case 1:
+                    Debug.Log("Fade");
+                    string[] output = new string[1];
+                    output[0] = "black";
+                    screenManager.SetScreen(output);
 
-            string[] output = new string[1];
-            output[0] = "black";
-            screenManager.SetScreen(output);
+                    missionNext = false;
+                    StartMission();
+                    break;
 
-            missionNext = false;
-            StartMission();
+            }
 
-            // switch (stage)
-            // {
-            //     case 0:
-            //         output = new string[2];
-            //         output[0] = "missionStart";
-            //         output[1] = "For your first mission, we will simply run through some exercises!";
-            //         screenManager.SetScreen(output);
-            //         timer = 1;
-            //         break;
-            // 
-            //     case 1:
-            //         output = new string[1];
-            //         output[0] = "HUD";
-            //         screenManager.SetScreen(output);
-            //         missionStart = false;
-            //         break;
-            // }
         }
 
     }
@@ -193,21 +192,25 @@ public class MissionManager : MonoBehaviour
         timer = endMissionDelay;
         missionEnd = true;
         stage = 0;
-        countDown = true;
     }
 
     public void NextMission()
     {
         string[] output = new string[1];
+
         output[0] = "black";
         screenManager.SetScreen(output);
 
         output[0] = "clear";
         screenManager.SetScreen(output);
+        dialogueManager.ClearDialogue();
 
         missionNext = true;
         stage = 0;
+        timer = 2;
         countDown = true;
+
+        Time.timeScale = 1;
     }
 
     public GameObject GetNextCheckpoint()
@@ -241,10 +244,6 @@ public class MissionManager : MonoBehaviour
 
     static void NextStage()
     {
-        if (missionStart)
-        {
-            stage++;
-            countDown = true;
-        }
+        countDown = true;
     }
 }

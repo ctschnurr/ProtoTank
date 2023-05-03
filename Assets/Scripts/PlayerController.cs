@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     GameManager gameManager;
     MissionManager missionManager;
+    DialogueManager dialogueManager;
 
     public enum State
     {
@@ -25,7 +26,7 @@ public class PlayerController : MonoBehaviour
     GameObject player;
 
     GameObject checkpointPointer;
-    public bool checkpointerOn = false;
+    public bool checkpointerOn = true;
     Vector3 pointerTarget;
 
     GameObject controlsScreen;
@@ -58,8 +59,10 @@ public class PlayerController : MonoBehaviour
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
 
-        checkpointPointer = GameObject.Find("Player/ChassisRotater/Main Camera/WaypointPointer");
+        checkpointPointer = GameObject.Find("Player/ChassisRotater/WaypointPointer");
+        checkpointPointer.SetActive(false);
 
         controlsScreen = GameObject.Find("ControlsScreen");
         controlsScreen.SetActive(false);
@@ -72,7 +75,7 @@ public class PlayerController : MonoBehaviour
         lastShotTimer = Time.time;
 
         reset = transform.position;
-        reset.y += 1;
+        // reset.y += 1;
 
         moveSpeed = moveSpeed * Time.deltaTime;
         barrelSpeed = barrelSpeed * Time.deltaTime;
@@ -158,6 +161,11 @@ public class PlayerController : MonoBehaviour
                     gameManager.PauseGame();
                 }
 
+                if (Input.GetKey(KeyCode.Space))
+                {
+                    dialogueManager.SetSkip();
+                }
+
                 if (Input.GetKeyDown(KeyCode.F) && flipped == false)
                 {
                     // transform.localRotation = Quaternion.Euler(0, transform.localRotation.y, 0);
@@ -174,16 +182,16 @@ public class PlayerController : MonoBehaviour
 
                 if (Input.GetKey(KeyCode.Tab)) controlsScreen.SetActive(true);
                 if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
-                return;
 
-                // if (checkpointerOn)
-                // {
-                //     GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
-                //     pointerTarget = pointerTargetObject.transform.position;
-                //     Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
-                //     Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
-                //     checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
-                // }
+                if (checkpointerOn)
+                {
+                    GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
+                    pointerTarget = pointerTargetObject.transform.position;
+                    Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
+                    Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
+                    checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
+                }
+                return;
         }
 
 
@@ -199,5 +207,20 @@ public class PlayerController : MonoBehaviour
     public void SetState(State input)
     {
         state = input;
+    }
+
+    public void TogglePointer()
+    {
+        if (checkpointPointer.activeSelf == false)
+        {
+            checkpointerOn = true;
+            checkpointPointer.SetActive(true);
+        }
+
+        else if (checkpointPointer.activeSelf == true)
+        {
+            checkpointerOn = false;
+            checkpointPointer.SetActive(false);
+        }
     }
 }
