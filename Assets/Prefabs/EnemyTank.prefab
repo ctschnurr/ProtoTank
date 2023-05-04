@@ -141,6 +141,9 @@ MonoBehaviour:
   state: 0
   enemyAgent: {fileID: 0}
   waypointList: []
+  projectile: {fileID: 7987857650390157338, guid: b30dad5b0cfcae042a9a871e186c235f, type: 3}
+  tankSightDistance: 10
+  launchVelocity: 1000
 --- !u!195 &5728471999735781075
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1762,7 +1765,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1865013653281509129}
   m_Layer: 0
-  m_Name: ChassisRotater
+  m_Name: EnemyChassis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11032,7 +11035,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4420509294374513027}
   m_Layer: 0
-  m_Name: BarrelRotater
+  m_Name: EnemyBarrel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

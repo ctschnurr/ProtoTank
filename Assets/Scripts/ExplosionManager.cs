@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ExplosionManager : MonoBehaviour
 {
-    float expandSpeed = 150f;
+    float expandSpeed = 125f;
     float fadeSpeed = 5f;
     Vector3 scaleChange;
 

@@ -57,7 +57,6 @@ public class ScreenManager : MonoBehaviour
     float fadeSpeed = 0.8f;
     float shrinkSpeed = 0.80f;
 
-    bool dialogueClear = true;
     string[] messageArray;
     string message;
 
