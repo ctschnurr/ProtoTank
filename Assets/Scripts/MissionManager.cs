@@ -100,8 +100,9 @@ public class MissionManager : MonoBehaviour
         activateMe.SetActive(true);
 
         stage = 0;
+        timer = 2;
         missionStart = true;
-        AdvanceMission();
+        countDown = true;
     }
 
     public static void AdvanceMission()
@@ -116,12 +117,31 @@ public class MissionManager : MonoBehaviour
                     output[0] = "missionStart";
                     output[1] = "Mission " + (currentMission +1) + ": Lets run through some exercises!";
                     screenManager.SetScreen(output);
-                    timer = 1;
 
                     stage++;
                     break;
 
                 case 1:
+                    //output = new string[1];
+                    //output[0] = "clear";
+                    //screenManager.SetScreen(output);
+
+                    gameManager.SetState(GameManager.State.active);
+
+                    //timer = 1;
+                    stage++;
+                    break;
+
+                case 2:
+                    output = new string[2];
+                    output[0] = "dialogue";
+                    output[1] = "Please proceed to the first checkpoint. The blue nav arrow will point the way for you!";
+                    screenManager.SetScreen(output);
+
+                    stage++;
+                    break;
+
+                case 3:
                     output = new string[1];
                     output[0] = "HUD";
                     screenManager.SetScreen(output);
@@ -203,7 +223,6 @@ public class MissionManager : MonoBehaviour
 
         output[0] = "clear";
         screenManager.SetScreen(output);
-        dialogueManager.ClearDialogue();
 
         missionNext = true;
         stage = 0;
@@ -244,6 +263,6 @@ public class MissionManager : MonoBehaviour
 
     static void NextStage()
     {
-        countDown = true;
+        if (missionStart) countDown = true;
     }
 }

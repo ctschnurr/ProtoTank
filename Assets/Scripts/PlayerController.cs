@@ -11,7 +11,8 @@ public class PlayerController : MonoBehaviour
     public enum State
     {
         controlEnabled,
-        controlDisabled
+        controlDisabled,
+        dead
     }
 
     public State state = State.controlEnabled;
@@ -24,6 +25,11 @@ public class PlayerController : MonoBehaviour
     GameObject chassis;
     GameObject barrel;
     GameObject player;
+
+    Renderer bodyRenderer;
+    Renderer chassisRenderer;
+    Renderer leftTreadRenderer;
+    Renderer rightTreadRenderer;
 
     GameObject checkpointPointer;
     public bool checkpointerOn = true;
@@ -54,6 +60,21 @@ public class PlayerController : MonoBehaviour
     public float fliptimer;
     bool flipped = false;
 
+    Color normalColor;
+    Color damageColor;
+
+    bool damaged = false;
+    bool vulnerable = true;
+
+    int damageCount = 6;
+    int damageCountReset = 6;
+
+    float damageTimer = 0.1f;
+    float damageTimerReset = 0.1f;
+
+    int lives = 3;
+    int livesReset = 3;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -72,6 +93,11 @@ public class PlayerController : MonoBehaviour
         barrel = GameObject.Find("Player/ChassisRotater/BarrelRotater");
         shotOrigin = GameObject.Find("Player/ChassisRotater/BarrelRotater/Barrel/ShotOrigin");
 
+        bodyRenderer = GameObject.Find("Player/Body").GetComponent<Renderer>();
+        chassisRenderer = GameObject.Find("Player/ChassisRotater/Chassis").GetComponent<Renderer>();
+        leftTreadRenderer = GameObject.Find("Player/TreadLeft").GetComponent<Renderer>();
+        rightTreadRenderer = GameObject.Find("Player/TreadRight").GetComponent<Renderer>();
+
         lastShotTimer = Time.time;
 
         reset = transform.position;
@@ -80,6 +106,10 @@ public class PlayerController : MonoBehaviour
         moveSpeed = moveSpeed * Time.deltaTime;
         barrelSpeed = barrelSpeed * Time.deltaTime;
         rotateSpeed = rotateSpeed * Time.deltaTime;
+
+        normalColor = bodyRenderer.material.color;
+        damageColor = new Color(1, 1, 1);
+
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -168,20 +198,12 @@ public class PlayerController : MonoBehaviour
 
                 if (Input.GetKeyDown(KeyCode.F) && flipped == false)
                 {
-                    // transform.localRotation = Quaternion.Euler(0, transform.localRotation.y, 0);
-
-                    //transform.Translate(0, 5, 0);
-                    // transform.position = transform.position + new Vector3(0, 3, 0);
-
                     flipped = true;
                     fliptimer = 5;
                 }
 
                 if (Input.GetKey(KeyCode.LeftShift)) throttle = true;
                 if (Input.GetKeyUp(KeyCode.LeftShift)) throttle = false;
-
-                if (Input.GetKey(KeyCode.Tab)) controlsScreen.SetActive(true);
-                if (Input.GetKeyUp(KeyCode.Tab)) controlsScreen.SetActive(false);
 
                 if (checkpointerOn)
                 {
@@ -191,7 +213,30 @@ public class PlayerController : MonoBehaviour
                     Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
                     checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
                 }
+
+                if (damaged)
+                {
+                    if (damageTimer < 0)
+                    {
+                        RunDamageBlink();
+                        damageTimer = damageTimerReset;
+                    }
+                    else if (damageTimer > 0)
+                    {
+                        damageTimer -= Time.deltaTime;
+                    }
+
+                }
                 return;
+
+            case State.dead:
+                gameManager.SetState(GameManager.State.dead);
+
+                bodyRenderer.material.color = damageColor;
+                chassisRenderer.material.color = damageColor;
+                leftTreadRenderer.material.color = damageColor;
+                rightTreadRenderer.material.color = damageColor;
+                break;
         }
 
 
@@ -222,5 +267,58 @@ public class PlayerController : MonoBehaviour
             checkpointerOn = false;
             checkpointPointer.SetActive(false);
         }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Explosion")
+        {
+            if (vulnerable)
+            {
+                damaged = true;
+                vulnerable = false;
+                lives--;
+
+                if (lives == 0) state = State.dead;
+            }
+
+
+
+            
+        }
+    }
+
+    void RunDamageBlink()
+    {
+        if (damageCount > 0)
+        {
+            if (bodyRenderer.material.color == normalColor)
+            {
+                bodyRenderer.material.color = damageColor;
+                chassisRenderer.material.color = damageColor;
+                leftTreadRenderer.material.color = damageColor;
+                rightTreadRenderer.material.color = damageColor;
+
+                damageCount--;
+            }
+            else if (bodyRenderer.material.color == damageColor)
+            {
+                bodyRenderer.material.color = normalColor;
+                chassisRenderer.material.color = normalColor;
+                leftTreadRenderer.material.color = normalColor;
+                rightTreadRenderer.material.color = normalColor;
+
+                damageCount--;
+            }
+        }
+        else if (damageCount == 0)
+        {
+            damaged = false;
+            vulnerable = true;
+            damageCount = damageCountReset;
+        }
+
+
+
     }
 }

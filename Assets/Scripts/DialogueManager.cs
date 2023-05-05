@@ -217,7 +217,7 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void InfoBox(string input)
+    public void InfoBox(string[] input)
     {
         if (!running)
         {
@@ -227,7 +227,7 @@ public class DialogueManager : MonoBehaviour
             timed = false;
             running = true;
 
-            dialogueText.text = input;
+            dialogueText.text = input[0];
             state = State.fadeIn;
         }
     }

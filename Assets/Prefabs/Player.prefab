@@ -1139,7 +1139,7 @@ GameObject:
   - component: {fileID: 3339155613884423208}
   - component: {fileID: 8021748478517031742}
   m_Layer: 0
-  m_Name: TreadSkirt
+  m_Name: TreadLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13629,7 +13629,7 @@ GameObject:
   - component: {fileID: 1508718731229923111}
   - component: {fileID: 1634361563723756871}
   m_Layer: 0
-  m_Name: TreadSkirt
+  m_Name: TreadRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

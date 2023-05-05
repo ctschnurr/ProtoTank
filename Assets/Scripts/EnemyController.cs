@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+    GameManager gameManager;
+
     public enum State
     {
         patrolling,
@@ -59,10 +61,13 @@ public class EnemyController : MonoBehaviour
     Vector3 testNow;
 
     public float barrelV;
+    bool enemyActive = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
         waypoint1 = GameObject.Find("waypoint1").transform;
         waypoint2 = GameObject.Find("waypoint2").transform;
         waypoint3 = GameObject.Find("waypoint3").transform;
@@ -106,82 +111,97 @@ public class EnemyController : MonoBehaviour
         playerPosition = player.transform.position;
         distance = Vector3.Distance(playerPosition, transform.position);
 
-        switch (state)
+        if (gameManager.state == GameManager.State.active) enemyActive = true;
+        else enemyActive = false;
+
+        if (enemyActive)
         {
-            case State.patrolling:
-                chassis.transform.Rotate(Vector3.up * 0.1f);
+            enemyAgent.isStopped = false;
 
-                currentAngle = barrel.transform.eulerAngles;
-                targetAngle.x = 80;
-                nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                barrel.transform.eulerAngles = nextAngle;
+            switch (state)
+            {
+                case State.patrolling:
+                    enemyAgent.SetDestination(nextWaypoint.position);
 
-                enemyAgent.SetDestination(nextWaypoint.position);
-                if (Vector3.Distance(nextWaypoint.position, transform.position) < 1) nextWaypoint = NextWaypoint(nextWaypoint);
-                if (Vector3.Distance(playerPosition, transform.position) < 25 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.chasing);
-                break;
+                    chassis.transform.Rotate(Vector3.up * 0.1f);
 
-            case State.chasing:
-                targetDirection = playerPosition - chassis.transform.position;
-                Vector3 newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
-                chassis.transform.rotation = Quaternion.LookRotation(newDirection);
+                    currentAngle = barrel.transform.eulerAngles;
+                    targetAngle.x = 80;
+                    nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                    barrel.transform.eulerAngles = nextAngle;
 
-                enemyAgent.SetDestination(playerPosition);
-                if (Vector3.Distance(playerPosition, transform.position) < 20) SetState(State.tracking);
-                break;
+                    if (Vector3.Distance(nextWaypoint.position, transform.position) < 1) nextWaypoint = NextWaypoint(nextWaypoint);
+                    if (Vector3.Distance(playerPosition, transform.position) < 25 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.chasing);
+                    break;
 
-            case State.tracking:
-                if (Vector3.Distance(playerPosition, transform.position) > 25) SetState(State.chasing);
-                if (Vector3.Distance(playerPosition, transform.position) < 10) SetState(State.retreating);
+                case State.chasing:
+                    targetDirection = playerPosition - chassis.transform.position;
+                    Vector3 newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
+                    chassis.transform.rotation = Quaternion.LookRotation(newDirection);
 
-                float angle = Vector3.Angle((playerPosition - transform.position), transform.forward);
-                if (angle < 25f) facingPlayer = true;
-                else if (angle > 25f) facingPlayer = false;
+                    enemyAgent.SetDestination(playerPosition);
+                    if (Vector3.Distance(playerPosition, transform.position) < 20) SetState(State.tracking);
+                    break;
 
-                switch (facingPlayer)
-                {
-                    case false:
-                        targetDirection = playerPosition - transform.position;
-                        newDirection = Vector3.RotateTowards(transform.forward, targetDirection, attackRotateSpeed, 0.0f);
-                        transform.rotation = Quaternion.LookRotation(newDirection);
-                        break;
+                case State.tracking:
+                    if (Vector3.Distance(playerPosition, transform.position) > 25) SetState(State.chasing);
+                    if (Vector3.Distance(playerPosition, transform.position) < 10) SetState(State.retreating);
 
-                    case true:
-                        float chassisAngle = Vector3.Angle((playerPosition - chassis.transform.position), chassis.transform.forward);
+                    float angle = Vector3.Angle((playerPosition - transform.position), transform.forward);
+                    if (angle < 25f) facingPlayer = true;
+                    else if (angle > 25f) facingPlayer = false;
 
-                        currentAngle = barrel.transform.eulerAngles;
-                        barrelV = 1500 / distance;
-                        barrelV = Mathf.Clamp(barrelV, 70, 90);
-                        targetAngle.x = barrelV;
+                    switch (facingPlayer)
+                    {
+                        case false:
+                            targetDirection = playerPosition - transform.position;
+                            newDirection = Vector3.RotateTowards(transform.forward, targetDirection, attackRotateSpeed, 0.0f);
+                            transform.rotation = Quaternion.LookRotation(newDirection);
+                            break;
 
-                        nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                        barrel.transform.eulerAngles = nextAngle;
+                        case true:
+                            float chassisAngle = Vector3.Angle((playerPosition - chassis.transform.position), chassis.transform.forward);
 
-                        if (chassisAngle > 3f)
-                        {
-                            targetDirection = playerPosition - chassis.transform.position;
-                            newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
-                            newDirection.y = 0;
-                            chassis.transform.rotation = Quaternion.LookRotation(newDirection);
-                        }
-                        else if (chassisAngle < 3f) Fire();
-                        break;
-                }
-                break;
+                            currentAngle = barrel.transform.eulerAngles;
+                            barrelV = 1500 / distance;
+                            barrelV = Mathf.Clamp(barrelV, 70, 90);
+                            targetAngle.x = barrelV;
 
-            case State.retreating:
-                enemyAgent.SetDestination(retreatTarget.position);
+                            nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                            barrel.transform.eulerAngles = nextAngle;
+
+                            if (chassisAngle > 3f)
+                            {
+                                targetDirection = playerPosition - chassis.transform.position;
+                                newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
+                                newDirection.y = 0;
+                                chassis.transform.rotation = Quaternion.LookRotation(newDirection);
+                            }
+                            else if (chassisAngle < 3f) Fire();
+                            break;
+                    }
+                    break;
+
+                case State.retreating:
+                    enemyAgent.SetDestination(retreatTarget.position);
 
 
-                targetDirection = playerPosition - chassis.transform.position;
-                newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
-                newDirection.y = 0;
-                chassis.transform.rotation = Quaternion.LookRotation(newDirection);
+                    targetDirection = playerPosition - chassis.transform.position;
+                    newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
+                    newDirection.y = 0;
+                    chassis.transform.rotation = Quaternion.LookRotation(newDirection);
 
-                if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.tracking);
-                if (Vector3.Distance(playerPosition, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
-                break;
+                    if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.tracking);
+                    if (Vector3.Distance(playerPosition, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
+                    break;
+            }
         }
+        else if (enemyActive == false)
+        {
+            enemyAgent.isStopped = true;
+        }
+
+        
     }
 
     Transform ClosestWaypoint(List<Transform> waypoints)

@@ -17,7 +17,7 @@ public class checkPoint : MonoBehaviour
     Color lerpedColor = Color.white;
 
     Vector3 scaleChange;
-    float speed = 0.003f;
+    float speed = 0.0001f;
     bool expand = true;
     public bool fadeOut = false;
 
@@ -45,6 +45,7 @@ public class checkPoint : MonoBehaviour
         checkPointObject = transform.gameObject;
         respawnPoint = transform.position;
 
+        speed += Time.deltaTime;
         scaleChange = new Vector3(speed, speed, speed);
         tempcolor = GetComponent<Renderer>().material.color;
         savecolor = tempcolor;

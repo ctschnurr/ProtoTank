@@ -31,6 +31,7 @@ public class ScreenManager : MonoBehaviour
         pause,
         missionStart,
         missionComplete,
+        missionFailed,
         HUD,
         dialogue,
         black
@@ -45,6 +46,7 @@ public class ScreenManager : MonoBehaviour
     GameObject pauseScreen;
     GameObject missionStart;
     GameObject missionComplete;
+    GameObject missionFailed;
     GameObject hud;
 
     GameObject blackScreen;
@@ -95,6 +97,9 @@ public class ScreenManager : MonoBehaviour
 
         missionComplete = GameObject.Find("MissionCompleteScreen");
         missionComplete.SetActive(false);
+
+        missionFailed = GameObject.Find("MissionFailedScreen");
+        missionFailed.SetActive(false);
 
         hud = GameObject.Find("HUD");
         hud.SetActive(false);
@@ -229,7 +234,8 @@ public class ScreenManager : MonoBehaviour
 
             if (input.Length == 2)
             {
-                message = input[1];
+                messageArray = new string[1];
+                messageArray[0] = input[1];
             }
             else if (input.Length > 2)
             {
@@ -246,6 +252,10 @@ public class ScreenManager : MonoBehaviour
                     else if(missionComplete.activeSelf == true) screenObject = missionComplete;
                     else if(hud.activeSelf == true) screenObject = hud;
                     state = State.screenDisappear;
+                    if (dialogueManager.GetState() != DialogueManager.State.idle)
+                    {
+                        dialogueManager.ClearDialogue();
+                    }
                     return;
 
                 case Screen.title:
@@ -264,14 +274,21 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.pause;
                     screenObject = missionStart;
                     state = State.screenAppear;
-                    dialogueManager.InfoBox(message);
+                    dialogueManager.InfoBox(messageArray);
                     break;
 
                 case Screen.missionComplete:
                     currentScreen = Screen.pause;
                     screenObject = missionComplete;
                     state = State.fadeInBackground;
-                    dialogueManager.InfoBox(message);
+                    dialogueManager.InfoBox(messageArray);
+                    break;
+
+                case Screen.missionFailed:
+                    currentScreen = Screen.pause;
+                    screenObject = missionFailed;
+                    state = State.fadeInBackground;
+                    dialogueManager.InfoBox(messageArray);
                     break;
 
                 case Screen.HUD:

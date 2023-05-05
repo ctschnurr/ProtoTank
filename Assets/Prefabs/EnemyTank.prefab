@@ -142,8 +142,10 @@ MonoBehaviour:
   enemyAgent: {fileID: 0}
   waypointList: []
   projectile: {fileID: 7987857650390157338, guid: b30dad5b0cfcae042a9a871e186c235f, type: 3}
+  distance: 0
   tankSightDistance: 10
   launchVelocity: 1000
+  barrelV: 0
 --- !u!195 &5728471999735781075
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1816,7 +1818,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2552655461662753209}
   m_LocalRotation: {x: 0, y: 0, z: -0.019633766, w: 0.9998073}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0.347, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
