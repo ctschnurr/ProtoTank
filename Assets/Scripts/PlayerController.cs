@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     GameManager gameManager;
     MissionManager missionManager;
     DialogueManager dialogueManager;
+    ScreenManager screenManager;
 
     public enum State
     {
@@ -32,8 +33,13 @@ public class PlayerController : MonoBehaviour
     Renderer rightTreadRenderer;
 
     GameObject checkpointPointer;
-    public bool checkpointerOn = true;
+    bool checkpointerOn = false;
+    bool pointerToggle = false;
     Vector3 pointerTarget;
+
+    Vector3 pointerSizeChange;
+    Vector3 pointerMin = new Vector3(0.0005f, 0.0005f, 0.0005f);
+    float pointerSizeSpeed = 0.0000005f;
 
     GameObject controlsScreen;
 
@@ -54,6 +60,7 @@ public class PlayerController : MonoBehaviour
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
     Vector3 currentAngle;
     Vector3 nextAngle;
+
     static Vector3 reset;
     static Vector3 respawn;
 
@@ -73,7 +80,10 @@ public class PlayerController : MonoBehaviour
     float damageTimerReset = 0.1f;
 
     int lives = 3;
-    int livesReset = 3;
+    int livesMax = 3;
+
+    public delegate void PlayerDamageAction();
+    public static event PlayerDamageAction OnPlayerDamage;
 
     // Start is called before the first frame update
     void Start()
@@ -110,6 +120,10 @@ public class PlayerController : MonoBehaviour
         normalColor = bodyRenderer.material.color;
         damageColor = new Color(1, 1, 1);
 
+        barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
+
+        pointerSizeSpeed += Time.deltaTime;
+        pointerSizeChange = new Vector3(pointerSizeSpeed, pointerSizeSpeed, pointerSizeSpeed);
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -130,6 +144,8 @@ public class PlayerController : MonoBehaviour
     {
         transform.position = reset;
         transform.rotation = Quaternion.identity;
+        chassis.transform.rotation = Quaternion.identity;
+        lives = livesMax;
     }
 
     // Update is called once per frame
@@ -143,6 +159,11 @@ public class PlayerController : MonoBehaviour
                 return;
 
             case State.controlEnabled:
+
+                // newMousePos = Input.mousePosition - lastMousePos;
+                // xChange = newMousePos.y - lastMousePos.y;
+
+
                 if (throttle) vert = Input.GetAxis("Vertical") * (moveSpeed * throttleFactor);
                 if (!throttle) vert = Input.GetAxis("Vertical") * moveSpeed;
 
@@ -208,10 +229,14 @@ public class PlayerController : MonoBehaviour
                 if (checkpointerOn)
                 {
                     GameObject pointerTargetObject = missionManager.GetNextCheckpoint();
-                    pointerTarget = pointerTargetObject.transform.position;
-                    Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
-                    Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
-                    checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
+                    if (pointerTargetObject != null)
+                    {
+                        pointerTarget = pointerTargetObject.transform.position;
+                        Vector3 targetDirection = pointerTarget - checkpointPointer.transform.position;
+                        Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
+                        checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
+                    }
+                    else return;
                 }
 
                 if (damaged)
@@ -227,7 +252,9 @@ public class PlayerController : MonoBehaviour
                     }
 
                 }
-                return;
+
+                // lastMousePos = Input.mousePosition;
+                break;
 
             case State.dead:
                 gameManager.SetState(GameManager.State.dead);
@@ -239,8 +266,42 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
+        if (pointerToggle)
+        {
+            if (checkpointerOn)
+            {
+                checkpointPointer.transform.localScale -= pointerSizeChange;
+                if (checkpointPointer.transform.localScale.x < 0.005f)
+                {
+                    pointerToggle = false;
+                    checkpointPointer.SetActive(false);
+                    checkpointerOn = false;
+                }
+            }
+            else if (!checkpointerOn)
+            {
+                if (checkpointPointer.activeSelf == false)
+                {
+                    checkpointPointer.SetActive(true);
+                    checkpointPointer.transform.localScale = pointerMin;
+                }
 
+                checkpointPointer.transform.localScale += pointerSizeChange;
+                if (checkpointPointer.transform.localScale.x >= 0.4f)
+                {
+
+                    pointerToggle = false;
+                    checkpointerOn = true;
+                }
+            }
+
+        }
         
+    }
+
+    public void TogglePointer()
+    {
+        pointerToggle = true;
     }
 
     public static void SetRespawn(Vector3 input)
@@ -254,27 +315,13 @@ public class PlayerController : MonoBehaviour
         state = input;
     }
 
-    public void TogglePointer()
-    {
-        if (checkpointPointer.activeSelf == false)
-        {
-            checkpointerOn = true;
-            checkpointPointer.SetActive(true);
-        }
-
-        else if (checkpointPointer.activeSelf == true)
-        {
-            checkpointerOn = false;
-            checkpointPointer.SetActive(false);
-        }
-    }
-
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Explosion")
         {
             if (vulnerable)
             {
+                PlayerDamage();
                 damaged = true;
                 vulnerable = false;
                 lives--;
@@ -320,5 +367,18 @@ public class PlayerController : MonoBehaviour
 
 
 
+    }
+
+    public int GetLives()
+    {
+        return lives;
+    }
+
+    public void PlayerDamage()
+    {
+        if (OnPlayerDamage != null)
+        {
+            OnPlayerDamage();
+        }
     }
 }

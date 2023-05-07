@@ -50,17 +50,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             case State.paused:
-                if (screenManager.GetState() == ScreenManager.State.idle)
-                {
-                    Time.timeScale = 0;
-                    player.SetState(PlayerController.State.controlDisabled);
-                    output = new string[1];
-                    output[0] = "pause";
-                    screenManager.SetScreen(output);
 
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
-                }
                 break;
 
             case State.dead:
@@ -84,12 +74,12 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
-        state = State.paused;
+        SetState(State.paused);
     }
 
     public void UnPauseGame()
     {
-        state = State.active;
+        SetState(State.active);
     }
 
     public void Quit()
@@ -140,6 +130,26 @@ public class GameManager : MonoBehaviour
                 Cursor.visible = true;
 
                 state = State.dead;
+                break;
+
+            case State.paused:
+                if (screenManager.GetState() == ScreenManager.State.idle)
+                {
+                    Time.timeScale = 0;
+                    player.SetState(PlayerController.State.controlDisabled);
+                    output = new string[1];
+                    output[0] = "pause";
+                    screenManager.SetScreen(output);
+
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+
+                    state = State.paused;
+                }
+                break;
+
+            case State.inactive:
+                state = State.inactive;
                 break;
 
 

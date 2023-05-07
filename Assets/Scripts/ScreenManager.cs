@@ -10,6 +10,7 @@ public class ScreenManager : MonoBehaviour
     GameManager gameManager;
     MissionManager missionManager;
     DialogueManager dialogueManager;
+    PlayerController player;
 
     public enum State
     {
@@ -21,7 +22,8 @@ public class ScreenManager : MonoBehaviour
         fadeOutBackground,
         close,
         fadeOut,
-        dialogue
+        dialogue,
+        fadeHeart
     }
 
     public enum Screen
@@ -49,6 +51,13 @@ public class ScreenManager : MonoBehaviour
     GameObject missionFailed;
     GameObject hud;
 
+    GameObject heartA;
+    GameObject heartB;
+    GameObject heartC;
+    GameObject heartTarget;
+    Color heartTempColor;
+    int playerLives;
+
     GameObject blackScreen;
     Color blackScreenColor;
 
@@ -70,6 +79,7 @@ public class ScreenManager : MonoBehaviour
     // Start is called before the first frame update
     public void Start()
     {
+        player = GameObject.Find("Player").GetComponent<PlayerController>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
@@ -102,11 +112,20 @@ public class ScreenManager : MonoBehaviour
         missionFailed.SetActive(false);
 
         hud = GameObject.Find("HUD");
+
+        heartA = GameObject.Find("HUD/HeartA");
+        heartB = GameObject.Find("HUD/HeartB");
+        heartC = GameObject.Find("HUD/HeartC");
+        heartTarget = heartC;
+
+        heartTempColor = heartTarget.GetComponent<Image>().color;
+
         hud.SetActive(false);
 
         screenQueue = new Queue<string[]>();
 
         DialogueManager.OnDialogueEnd += DialogueOver;
+        PlayerController.OnPlayerDamage += TakeHeart;
     }
 
     // Update is called once per frame
@@ -205,6 +224,20 @@ public class ScreenManager : MonoBehaviour
                     //FadeOutComplete();
                 }
                 break;
+
+            case State.fadeHeart:
+                if (heartTarget.GetComponent<Image>().color.a > 0.1)
+                {
+                    heartTempColor = heartTarget.GetComponent<Image>().color;
+                    heartTempColor.a = Mathf.MoveTowards(heartTempColor.a, 0f, fadeSpeed);
+                    heartTarget.GetComponent<Image>().color = heartTempColor;
+                }
+                else
+                {
+                    heartTarget.SetActive(false);
+                    state = State.idle;
+                }
+                break; 
         }
 
         if (screenQueue.Count != 0 && state == State.idle)
@@ -326,5 +359,15 @@ public class ScreenManager : MonoBehaviour
         {
             OnFadeOutComplete();
         }
+    }
+
+    void TakeHeart()
+    {
+        playerLives = player.GetLives();
+        Debug.Log(playerLives);
+        if (playerLives == 1) heartTarget = heartA;
+        else if (playerLives == 2) heartTarget = heartB;
+        else if (playerLives == 3) heartTarget = heartC;
+        state = State.fadeHeart;
     }
 }

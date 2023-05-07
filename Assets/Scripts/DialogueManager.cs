@@ -13,6 +13,7 @@ public class DialogueManager : MonoBehaviour
     Color windowColor;
 
     TextMeshProUGUI dialogueText;
+    TextMeshProUGUI infoText;
     GameObject dialogueTextObject;
     Color textColor;
 
@@ -34,10 +35,11 @@ public class DialogueManager : MonoBehaviour
 
     Vector2 sizeReference;
     Vector2 maxSize = new Vector2(800, 200);
-    Vector2 infoSize = new Vector2(800, 200);
+    Vector2 infoSize = new Vector2(800, 300);
     Vector2 minSize = new Vector2(50, 50);
 
-    Vector2 infoPosition = new Vector2(0, 400);
+    Vector2 infoPosition = new Vector2(0, 325);
+    Vector2 infoTextPosition = new Vector2(0, 425);
     Vector2 dialoguePosition = new Vector2(0, 50);
 
 
@@ -222,7 +224,7 @@ public class DialogueManager : MonoBehaviour
         if (!running)
         {
             dialogueWindow.GetComponent<RectTransform>().anchoredPosition = infoPosition;
-            dialogueTextObject.GetComponent<RectTransform>().anchoredPosition = infoPosition;
+            dialogueTextObject.GetComponent<RectTransform>().anchoredPosition = infoTextPosition;
             sizeReference = infoSize;
             timed = false;
             running = true;
