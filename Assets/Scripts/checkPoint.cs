@@ -1,13 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class checkPoint : MonoBehaviour
 {
     PlayerController player;
     GameObject checkPointObject;
     GameObject parent;
+
     MissionManager manager;
+    ScreenManager screenManager;
 
     Vector3 respawnPoint;
 
@@ -17,7 +20,7 @@ public class checkPoint : MonoBehaviour
     Color lerpedColor = Color.white;
 
     Vector3 scaleChange;
-    float speed = 0.0001f;
+    float speed = 0.5f;
     bool expand = true;
     public bool fadeOut = false;
 
@@ -36,21 +39,28 @@ public class checkPoint : MonoBehaviour
 
     public string[] dialogueStrings;
 
+    bool managed = false;
+    bool hasStrings = true;
+
     void Start()
     {
         manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         player = GameObject.Find("Player").GetComponent<PlayerController>();
 
         checkPointObject = transform.gameObject;
         respawnPoint = transform.position;
 
-        speed += Time.deltaTime;
+        speed *= Time.deltaTime;
         scaleChange = new Vector3(speed, speed, speed);
         tempcolor = GetComponent<Renderer>().material.color;
         savecolor = tempcolor;
 
         checkpointSound = GetComponent<AudioSource>();
+
+        if (transform.parent != null && transform.parent.gameObject.tag == "MissionGroup") managed = true;
+        if (dialogueStrings.Length == 0) hasStrings = false;
     }
 
     // Update is called once per frame
@@ -73,7 +83,17 @@ public class checkPoint : MonoBehaviour
         {
             fadeOut = false;
             GetComponent<Renderer>().material.color = savecolor;
-            manager.NextObjective(checkPointObject, dialogueStrings);
+
+            if (managed) manager.NextObjective(checkPointObject, dialogueStrings);
+            else if (hasStrings)
+            {
+                string[] output = new string[dialogueStrings.Length + 1];
+                output[0] = "dialogue";
+
+                Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
+                screenManager.SetScreen(output);
+            }
+
             checkPointObject.SetActive(false);
         }
 

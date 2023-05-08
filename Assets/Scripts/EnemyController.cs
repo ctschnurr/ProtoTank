@@ -11,7 +11,8 @@ public class EnemyController : MonoBehaviour
         patrolling,
         chasing,
         tracking,
-        retreating
+        retreating,
+        dead
     }
 
     GameObject parent;
@@ -30,9 +31,16 @@ public class EnemyController : MonoBehaviour
 
     GameObject chassis;
     GameObject barrel;
+    GameObject barrelObj;
     GameObject player;
     public GameObject projectile;
     GameObject shotOrigin;
+
+    Renderer barrelRenderer;
+    Renderer bodyRenderer;
+    Renderer chassisRenderer;
+    Renderer leftTreadRenderer;
+    Renderer rightTreadRenderer;
 
     float ShootDelay = 2;
     float lastShotTimer;
@@ -62,6 +70,22 @@ public class EnemyController : MonoBehaviour
 
     public float barrelV;
     bool enemyActive = false;
+    bool damaged = false;
+    bool vulnerable = true;
+
+    int lives = 3;
+
+    int damageCount = 6;
+    int damageCountReset = 6;
+
+    float damageTimer = 0.1f;
+    float damageTimerReset = 0.1f;
+
+    Color normalColor;
+    Color damageColor;
+
+    Color torchedBarrel;
+    Color torchedChassis;
 
     // Start is called before the first frame update
     void Start()
@@ -89,6 +113,13 @@ public class EnemyController : MonoBehaviour
         barrel = parent.transform.Find("EnemyChassis/EnemyBarrel").gameObject;
         player = GameObject.Find("Player").gameObject;
         shotOrigin = parent.transform.Find("EnemyChassis/EnemyBarrel/Barrel/ShotOrigin").gameObject;
+        barrelObj = parent.transform.Find("EnemyChassis/EnemyBarrel/Barrel").gameObject;
+
+        barrelRenderer = parent.transform.Find("EnemyChassis/EnemyBarrel/Barrel").GetComponent<Renderer>();
+        bodyRenderer = parent.transform.Find("Body").GetComponent<Renderer>();
+        chassisRenderer = parent.transform.Find("EnemyChassis/Chassis").GetComponent<Renderer>();
+        leftTreadRenderer = parent.transform.Find("TreadSkirtL").GetComponent<Renderer>();
+        rightTreadRenderer = parent.transform.Find("TreadSkirtR").GetComponent<Renderer>();
 
         barrel.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
@@ -103,6 +134,13 @@ public class EnemyController : MonoBehaviour
         testLeft.x -= 10;
         testLeft.z -= 10;
         testNow = testRight;
+
+        normalColor = bodyRenderer.material.color;
+        damageColor = new Color(1, 1, 1);
+
+        torchedBarrel = barrelRenderer.material.color;
+        torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
+        torchedChassis = new Color(normalColor.r - 0.8f, normalColor.g - 0.8f, normalColor.b - 0.8f);
     }
 
     // Update is called once per frame
@@ -194,6 +232,17 @@ public class EnemyController : MonoBehaviour
                     if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.tracking);
                     if (Vector3.Distance(playerPosition, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
                     break;
+
+                case State.dead:
+                    enemyAgent.isStopped = true;
+
+                    barrelObj.GetComponent<Rigidbody>().isKinematic = false;
+                    barrelRenderer.material.color = torchedBarrel;
+                    chassisRenderer.material.color = torchedChassis;
+                    bodyRenderer.material.color = torchedChassis;
+                    leftTreadRenderer.material.color = torchedChassis;
+                    rightTreadRenderer.material.color = torchedChassis;
+                    break;
             }
         }
         else if (enemyActive == false)
@@ -201,7 +250,20 @@ public class EnemyController : MonoBehaviour
             enemyAgent.isStopped = true;
         }
 
-        
+
+        if (damaged)
+        {
+            Debug.Log("Damaged");
+            if (damageTimer < 0)
+            {
+                RunDamageBlink();
+                damageTimer = damageTimerReset;
+            }
+            else if (damageTimer > 0)
+            {
+                damageTimer -= Time.deltaTime;
+            }
+        }
     }
 
     Transform ClosestWaypoint(List<Transform> waypoints)
@@ -257,9 +319,62 @@ public class EnemyController : MonoBehaviour
                 state = State.retreating;
                 break;
 
+            case State.dead:
+                enemyAgent.isStopped = true;
+                state = State.dead;
+                break;
+
             default:
                 state = input;
                 break;
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Explosion")
+        {
+            if (vulnerable)
+            {
+                enemyActive = false;
+                damaged = true;
+                vulnerable = false;
+                lives--;
+
+                if (lives == 0) SetState(State.dead);
+            }
+        }
+    }
+
+    void RunDamageBlink()
+    {
+        if (damageCount > 0)
+        {
+            if (bodyRenderer.material.color == normalColor)
+            {
+                bodyRenderer.material.color = damageColor;
+                chassisRenderer.material.color = damageColor;
+                leftTreadRenderer.material.color = damageColor;
+                rightTreadRenderer.material.color = damageColor;
+
+                damageCount--;
+            }
+            else if (bodyRenderer.material.color == damageColor)
+            {
+                bodyRenderer.material.color = normalColor;
+                chassisRenderer.material.color = normalColor;
+                leftTreadRenderer.material.color = normalColor;
+                rightTreadRenderer.material.color = normalColor;
+
+                damageCount--;
+            }
+        }
+        else if (damageCount == 0)
+        {
+            enemyActive = true;
+            damaged = false;
+            vulnerable = true;
+            damageCount = damageCountReset;
         }
     }
 }

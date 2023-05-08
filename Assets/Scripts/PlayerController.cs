@@ -327,11 +327,7 @@ public class PlayerController : MonoBehaviour
                 lives--;
 
                 if (lives == 0) state = State.dead;
-            }
-
-
-
-            
+            }            
         }
     }
 
@@ -364,9 +360,6 @@ public class PlayerController : MonoBehaviour
             vulnerable = true;
             damageCount = damageCountReset;
         }
-
-
-
     }
 
     public int GetLives()
