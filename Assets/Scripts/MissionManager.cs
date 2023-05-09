@@ -10,8 +10,9 @@ public class MissionManager : MonoBehaviour
     static ScreenManager screenManager;
     static PlayerController player;
 
-    int endMissionDelay = 3;
+    int endMissionDelay = 5;
 
+    GameObject playerObj;
     GameObject parent;
     GameObject nextCheckPoint;
     GameObject reference;
@@ -19,13 +20,6 @@ public class MissionManager : MonoBehaviour
     GameObject missionFolder1;
     int numberOfMissions;
     static int currentMission = 0;
-
-    // public enum Mission
-    // {
-    //     mission1,
-    //     mission2,
-    //     mission3
-    // }
 
     public enum State
     {
@@ -52,6 +46,8 @@ public class MissionManager : MonoBehaviour
 
     static Queue<State> missionQueue;
 
+    public static Objective objReference;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -59,6 +55,7 @@ public class MissionManager : MonoBehaviour
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
         player = GameObject.Find("Player").GetComponent<PlayerController>();
+        playerObj = GameObject.Find("Player");
 
         parent = transform.gameObject;
 
@@ -83,8 +80,6 @@ public class MissionManager : MonoBehaviour
                 missionObjective.SetActive(false);
             }
         }
-
-        //-----
 
         DialogueManager.OnDialogueEnd += NextStage;
         ScreenManager.OnFadeOutComplete += NextStage;
@@ -112,10 +107,6 @@ public class MissionManager : MonoBehaviour
 
     public static void StartMission()
     {
-        List<GameObject> holder = missions[currentMission];
-        GameObject activateMe = holder[0];
-        activateMe.SetActive(true);
-
         stage = 0;
         timer = 1;
         missionStart = true;
@@ -195,6 +186,26 @@ public class MissionManager : MonoBehaviour
                     screenManager.SetScreen(output);
                     player.TogglePointer();
 
+                    stage++;
+                    next = State.advanceMission;
+                    missionQueue.Enqueue(next);
+                    state = State.idle;
+                    break;
+
+                case 4:
+                    List<GameObject> holder = missions[currentMission];
+                    GameObject activateMe = holder[0];
+                    activateMe.SetActive(true);
+
+                    objReference = activateMe.GetComponent<Objective>();
+                    string[] dialogue = objReference.GetPreStrings();
+
+                    output = new string[dialogue.Length + 1];
+                    output[0] = "dialogue";
+
+                    Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                    screenManager.SetScreen(output);
+
                     missionStart = false;
                     break;
             }
@@ -267,13 +278,6 @@ public class MissionManager : MonoBehaviour
 
     }
 
-    public void EndMission()
-    {
-        timer = endMissionDelay;
-        State next = State.missionStop;
-        missionQueue.Enqueue(next);
-    }
-
     public void NextMission()
     {
         State next = State.missionNext;
@@ -285,30 +289,151 @@ public class MissionManager : MonoBehaviour
     {
         List<GameObject> holder = missions[currentMission];
         if (holder.Count == 0) return null;
-        else return holder[0];
+        GameObject subject = holder[0];
+
+        if (subject.tag == "ObjectiveGroup")
+        {
+            Transform objGroupTransform = subject.transform;
+            Component[] objectives = subject.GetComponentsInChildren<Transform>();
+
+            Transform nearest = null;
+            float minDist = Mathf.Infinity;
+
+            foreach (Transform objective in objectives)
+            {
+                float dist = Vector3.Distance(objective.position, player.transform.position);
+                if (dist < minDist && objective.gameObject != subject)
+                {
+                    nearest = objective;
+                    minDist = dist;
+                }
+            }
+
+            subject = nearest.gameObject;
+        }
+
+        return subject;
     }
 
     public void NextObjective(GameObject input, string[] dialogue)
     {
-        reference = input;
-        missions[currentMission].Remove(reference);
+        GameObject parent = input.transform.parent.gameObject;
+        int left = parent.transform.childCount;
+        left--;
 
-        output = new string[dialogue.Length + 1];
-        output[0] = "dialogue";
-
-        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-
-        screenManager.SetScreen(output);
-
-        if (missions[currentMission].Count != 0)
+        if (parent.tag == "ObjectiveGroup")
         {
-            List<GameObject> refList = missions[currentMission];
-            refList[0].SetActive(true);
+            if (left > 0)
+            {
+                output = new string[dialogue.Length + 2];
+                output[0] = "dialogue";
+                output[dialogue.Length + 1] = left + " to go!";
+                Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                screenManager.SetScreen(output);
+            }
+            else
+            {
+                missions[currentMission].Remove(parent);
+            }
         }
         else
         {
+            reference = input;
+            missions[currentMission].Remove(reference);
+            
+            // output = new string[dialogue.Length + 1];
+            // output[0] = "dialogue";
+            // 
+            // Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+            // screenManager.SetScreen(output);
+        }
+
+        if (missions[currentMission].Count != 0)
+        {
+            if(parent.tag == "ObjectiveGroup" && left > 0)
+            {
+
+
+
+            }
+            else
+            {
+                List<GameObject> refList = missions[currentMission];
+                GameObject nextObj = refList[0];
+                nextObj.SetActive(true);
+
+                if (nextObj.tag == "ObjectiveGroup")
+                {
+                    Transform firstInGroup = nextObj.transform.GetChild(0);
+                    objReference = firstInGroup.GetComponent<Objective>();
+                    string[] preStrings = objReference.GetPreStrings();
+
+                    int count = nextObj.transform.childCount;
+
+                    if (preStrings != null)
+                    {
+                        output = new string[(dialogue.Length + preStrings.Length + 2)];
+                        output[0] = "dialogue";
+
+                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
+                        Array.Copy(preStrings, 0, output, dialogue.Length + 2, preStrings.Length);
+
+                        screenManager.SetScreen(output);
+                    }
+                    else
+                    {
+                        output = new string[(dialogue.Length + 2)];
+                        output[0] = "dialogue";
+
+                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+
+                        output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
+                        screenManager.SetScreen(output);
+                    }
+                }
+                else
+                {
+                    objReference = nextObj.GetComponent<Objective>();
+                    string[] preStrings = objReference.GetPreStrings();
+                    if (preStrings != null)
+                    {
+                        output = new string[(dialogue.Length + preStrings.Length + 1)];
+                        output[0] = "dialogue";
+
+                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
+                        screenManager.SetScreen(output);
+                    }
+                    else
+                    {
+                        output = new string[(dialogue.Length + 1)];
+                        output[0] = "dialogue";
+
+                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        screenManager.SetScreen(output);
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            output = new string[(dialogue.Length + 1)];
+            output[0] = "dialogue";
+
+            Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+            screenManager.SetScreen(output);
+
             EndMission();
         }
+    }
+
+    public void EndMission()
+    {
+        timer = endMissionDelay;
+        State next = State.missionStop;
+        missionQueue.Enqueue(next);
     }
 
     static void NextStage()

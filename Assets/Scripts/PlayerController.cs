@@ -236,7 +236,7 @@ public class PlayerController : MonoBehaviour
                         Vector3 newDirection = Vector3.RotateTowards(checkpointPointer.transform.forward, targetDirection, (2.5f * Time.deltaTime), 0.0f);
                         checkpointPointer.transform.rotation = Quaternion.LookRotation(newDirection);
                     }
-                    else return;
+                    else pointerToggle = true;
                 }
 
                 if (damaged)

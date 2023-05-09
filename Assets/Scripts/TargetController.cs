@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class TargetController : MonoBehaviour
+public class TargetController : Objective
 {
 
     GameObject TargetA;
@@ -23,19 +23,12 @@ public class TargetController : MonoBehaviour
     bool destroyed = false;
     bool countMe = false;
 
-    MissionManager manager;
-    ScreenManager screenManager;
-
-    public string[] dialogueStrings;
-
-    bool managed = false;
-    bool hasStrings = true;
-
     // Start is called before the first frame update
     void Start()
     {
         parent = transform.gameObject;
-        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        subjectObject = parent;
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         TargetA = parent.transform.Find("TargetA").gameObject;
@@ -50,8 +43,14 @@ public class TargetController : MonoBehaviour
         decay_timer = decay_timer * Time.deltaTime;
         fadeSpeed = fadeSpeed * Time.deltaTime;
 
-        if (transform.parent != null && transform.parent.gameObject.tag == "MissionGroup") managed = true;
-        if (dialogueStrings.Length == 0) hasStrings = false;
+        if (transform.parent != null)
+        {
+            if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
+        }
+
+        if (preStrings.Length > 0) hasPreStrings = true;
+        if (postStrings.Length > 0) hasPostStrings = true;
+
 
     }
 
@@ -95,15 +94,7 @@ public class TargetController : MonoBehaviour
             TargetH.GetComponent<Rigidbody>().isKinematic = false;
             destroyed = true;
             countMe = true;
-            if (managed) manager.NextObjective(parent, dialogueStrings);
-            else if (hasStrings)
-            {
-                string[] output = new string[dialogueStrings.Length + 1];
-                output[0] = "dialogue";
-
-                Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
-                screenManager.SetScreen(output);
-            }
+            RunComplete();
         }
     }
 

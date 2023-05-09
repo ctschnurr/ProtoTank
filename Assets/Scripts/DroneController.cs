@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class DroneController : MonoBehaviour
+public class DroneController : Objective
 {
-    GameManager gameManager;
-    MissionManager manager;
-    ScreenManager screenManager;
-
     public enum State
     {
         patrolling,
@@ -38,15 +34,8 @@ public class DroneController : MonoBehaviour
     float speed = 0.1f;
     Vector3 scaleChange;
 
-    public string[] dialogueStrings;
-
-    bool managed = false;
-    bool hasStrings = true;
-
-    float decay_timer = 0.0f;
+    float decay_timer = 5.0f;
     float fadeSpeed = 0.1f;
-
-    float alpha = 1f;
 
     public Component[] droneParts;
 
@@ -54,12 +43,13 @@ public class DroneController : MonoBehaviour
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         enemyDrone = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
         parent = transform.gameObject;
+        subjectObject = parent;
         body = parent.transform.Find("Body").gameObject;
 
         waypoint1 = GameObject.Find("waypoint1").transform;
@@ -80,7 +70,6 @@ public class DroneController : MonoBehaviour
         posChange = new Vector3(0, speed, 0);
         scaleChange = new Vector3(speed * 2, speed * 2, speed * 2);
 
-        decay_timer *= Time.deltaTime;
         fadeSpeed *= Time.deltaTime;
 
         int numberOfPieces = body.transform.childCount;
@@ -92,14 +81,14 @@ public class DroneController : MonoBehaviour
             GameObject dronePiece = dronePieceTransform.gameObject;
 
             pieces.Add(dronePiece);
-
-
         }
 
-        if (transform.parent != null && transform.parent.gameObject.tag == "MissionGroup") managed = true;
-        if (dialogueStrings.Length == 0) hasStrings = false;
+        if (transform.parent != null)
+        {
+            if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
+        }
 
-
+        tpShader = Shader.Find("Transparent/Diffuse");
     }
 
     // Update is called once per frame
@@ -127,16 +116,24 @@ public class DroneController : MonoBehaviour
 
                 case State.dead:
                     enemyDrone.isStopped = true;
-                    decay_timer += 0.05f;
+                    decay_timer -= Time.deltaTime;
 
-                    if (decay_timer > 10)
+                    if (decay_timer < 0)
                     {
-                        droneParts = GetComponentsInChildren<Transform>();
+                        droneParts = GetComponentsInChildren<Renderer>();
 
-                        foreach (Transform partTransform in droneParts)
+                        foreach (Renderer partRenderer in droneParts)
                         {
-                            partTransform.localScale -= scaleChange;
-                            if (partTransform.localScale.x < 0.75) Destroy(partTransform.gameObject);
+                            partRenderer.material.shader = tpShader;
+
+                            Color tempcolor = partRenderer.material.color;
+                            tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, 0.005f);
+                            partRenderer.material.color = tempcolor;
+
+                            if(tempcolor.a == 0)
+                            {
+                                Destroy(parent);
+                            }
                         }
                     }
                     break;
@@ -163,20 +160,12 @@ public class DroneController : MonoBehaviour
         if (collision.gameObject.tag == "Shell")
         {
             state = State.dead;
+            RunComplete();
 
+            parent.GetComponent<Collider>().enabled = false;
             foreach (GameObject piece in pieces)
             {
                 piece.GetComponent<Rigidbody>().isKinematic = false;
-            }
-
-            if (managed) manager.NextObjective(parent, dialogueStrings);
-            else if (hasStrings)
-            {
-                string[] output = new string[dialogueStrings.Length + 1];
-                output[0] = "dialogue";
-
-                Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
-                screenManager.SetScreen(output);
             }
         }
     }

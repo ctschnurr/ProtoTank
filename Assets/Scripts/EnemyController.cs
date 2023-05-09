@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class EnemyController : MonoBehaviour
 {
     GameManager gameManager;
+    MissionManager manager;
+    ScreenManager screenManager;
 
     public enum State
     {
@@ -73,6 +76,9 @@ public class EnemyController : MonoBehaviour
     bool damaged = false;
     bool vulnerable = true;
 
+    bool managed = false;
+    bool hasStrings = true;
+
     int lives = 3;
 
     int damageCount = 6;
@@ -86,11 +92,17 @@ public class EnemyController : MonoBehaviour
 
     Color torchedBarrel;
     Color torchedChassis;
+    
+    Shader tpShader;
+
+    public string[] dialogueStrings;
 
     // Start is called before the first frame update
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         waypoint1 = GameObject.Find("waypoint1").transform;
         waypoint2 = GameObject.Find("waypoint2").transform;
@@ -141,6 +153,15 @@ public class EnemyController : MonoBehaviour
         torchedBarrel = barrelRenderer.material.color;
         torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
         torchedChassis = new Color(normalColor.r - 0.8f, normalColor.g - 0.8f, normalColor.b - 0.8f);
+
+        if (transform.parent != null)
+        {
+            if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
+        }
+
+        if (dialogueStrings.Length == 0) hasStrings = false;
+
+        tpShader = Shader.Find("Transparent/Diffuse");
     }
 
     // Update is called once per frame
@@ -253,7 +274,6 @@ public class EnemyController : MonoBehaviour
 
         if (damaged)
         {
-            Debug.Log("Damaged");
             if (damageTimer < 0)
             {
                 RunDamageBlink();
@@ -322,6 +342,17 @@ public class EnemyController : MonoBehaviour
             case State.dead:
                 enemyAgent.isStopped = true;
                 state = State.dead;
+
+                if (managed) manager.NextObjective(parent, dialogueStrings);
+                else if (hasStrings)
+                {
+                    string[] output = new string[dialogueStrings.Length + 1];
+                    output[0] = "dialogue";
+
+                    Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
+                    screenManager.SetScreen(output);
+                }
+
                 break;
 
             default:

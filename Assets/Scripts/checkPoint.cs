@@ -3,16 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class checkPoint : MonoBehaviour
+public class checkPoint : Objective
 {
-    PlayerController player;
-    GameObject checkPointObject;
     GameObject parent;
-
-    MissionManager manager;
-    ScreenManager screenManager;
-
     Vector3 respawnPoint;
+    Objective checkpoint;
 
     Vector3 sizeUp;
     Vector3 sizeDown;
@@ -37,19 +32,13 @@ public class checkPoint : MonoBehaviour
 
     public State state = State.Indy;
 
-    public string[] dialogueStrings;
-
-    bool managed = false;
-    bool hasStrings = true;
-
     void Start()
     {
-        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
-        player = GameObject.Find("Player").GetComponent<PlayerController>();
-
-        checkPointObject = transform.gameObject;
+        subjectObject = transform.gameObject;
         respawnPoint = transform.position;
 
         speed *= Time.deltaTime;
@@ -59,8 +48,13 @@ public class checkPoint : MonoBehaviour
 
         checkpointSound = GetComponent<AudioSource>();
 
-        if (transform.parent != null && transform.parent.gameObject.tag == "MissionGroup") managed = true;
-        if (dialogueStrings.Length == 0) hasStrings = false;
+        if (transform.parent != null)
+        {
+            if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
+        }
+
+        if (preStrings.Length > 0) hasPreStrings = true;
+        if (postStrings.Length > 0) hasPostStrings = true;
     }
 
     // Update is called once per frame
@@ -84,17 +78,9 @@ public class checkPoint : MonoBehaviour
             fadeOut = false;
             GetComponent<Renderer>().material.color = savecolor;
 
-            if (managed) manager.NextObjective(checkPointObject, dialogueStrings);
-            else if (hasStrings)
-            {
-                string[] output = new string[dialogueStrings.Length + 1];
-                output[0] = "dialogue";
+            RunComplete();
 
-                Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
-                screenManager.SetScreen(output);
-            }
-
-            checkPointObject.SetActive(false);
+            subjectObject.SetActive(false);
         }
 
     }
