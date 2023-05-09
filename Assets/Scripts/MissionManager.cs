@@ -123,7 +123,6 @@ public class MissionManager : MonoBehaviour
                 missionEnd = true;
                 stage = 0;
 
-                player.TogglePointer();
                 break;
 
             case State.missionNext:
@@ -219,7 +218,7 @@ public class MissionManager : MonoBehaviour
 
             output = new string[2];
             output[0] = "missionComplete";
-            output[1] = "Good work! \n\n Time:\n Attempts:\n\nClick CONTINUE to move on to the next mission!";
+            output[1] = "\nGood work! \n\n Time:\n Attempts:\n\nClick CONTINUE to move on to the next mission!";
             screenManager.SetScreen(output);
 
             gameManager.SetState(GameManager.State.inactive);

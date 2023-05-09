@@ -53,8 +53,8 @@ public class checkPoint : Objective
             if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
         }
 
-        if (preStrings.Length > 0) hasPreStrings = true;
-        if (postStrings.Length > 0) hasPostStrings = true;
+        //if (preStrings.Length > 0) hasPreStrings = true;
+        //if (postStrings.Length > 0) hasPostStrings = true;
     }
 
     // Update is called once per frame

@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class EnemyController : MonoBehaviour
+public class EnemyController : Objective
 {
-    GameManager gameManager;
-    MissionManager manager;
-    ScreenManager screenManager;
-
     public enum State
     {
         patrolling,
@@ -66,18 +62,10 @@ public class EnemyController : MonoBehaviour
 
     float attackRotateSpeed = 0.25f;
 
-    Vector3 testRight;
-    Vector3 testLeft;
-    Vector3 testDirection;
-    Vector3 testNow;
-
     public float barrelV;
     bool enemyActive = false;
     bool damaged = false;
     bool vulnerable = true;
-
-    bool managed = false;
-    bool hasStrings = true;
 
     int lives = 3;
 
@@ -92,16 +80,14 @@ public class EnemyController : MonoBehaviour
 
     Color torchedBarrel;
     Color torchedChassis;
-    
-    Shader tpShader;
 
-    public string[] dialogueStrings;
+    Vector3 spawnPoint;
 
     // Start is called before the first frame update
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        manager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         waypoint1 = GameObject.Find("waypoint1").transform;
@@ -133,19 +119,12 @@ public class EnemyController : MonoBehaviour
         leftTreadRenderer = parent.transform.Find("TreadSkirtL").GetComponent<Renderer>();
         rightTreadRenderer = parent.transform.Find("TreadSkirtR").GetComponent<Renderer>();
 
+        spawnPoint = transform.position;
+
         barrel.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
         attackRotateSpeed = attackRotateSpeed * Time.deltaTime;
         lastShotTimer = Time.time;
-
-        testRight = chassis.transform.localPosition;
-        testRight.x += 10;
-        testRight.z += 10;
-
-        testLeft = chassis.transform.localPosition;
-        testLeft.x -= 10;
-        testLeft.z -= 10;
-        testNow = testRight;
 
         normalColor = bodyRenderer.material.color;
         damageColor = new Color(1, 1, 1);
@@ -158,8 +137,6 @@ public class EnemyController : MonoBehaviour
         {
             if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
         }
-
-        if (dialogueStrings.Length == 0) hasStrings = false;
 
         tpShader = Shader.Find("Transparent/Diffuse");
     }
@@ -244,14 +221,13 @@ public class EnemyController : MonoBehaviour
                 case State.retreating:
                     enemyAgent.SetDestination(retreatTarget.position);
 
-
                     targetDirection = playerPosition - chassis.transform.position;
                     newDirection = Vector3.RotateTowards(chassis.transform.forward, targetDirection, attackRotateSpeed, 0.0f);
                     newDirection.y = 0;
                     chassis.transform.rotation = Quaternion.LookRotation(newDirection);
 
-                    if (Vector3.Distance(playerPosition, transform.position) < 20 && Vector3.Distance(playerPosition, transform.position) > 10) SetState(State.tracking);
-                    if (Vector3.Distance(playerPosition, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
+                    if (Vector3.Distance(playerPosition, transform.position) > 15) SetState(State.tracking);
+                    if (Vector3.Distance(transform.position, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
                     break;
 
                 case State.dead:
@@ -335,24 +311,13 @@ public class EnemyController : MonoBehaviour
                 break;
 
             case State.retreating:
-                retreatTarget = ClosestWaypoint(waypointList);
                 state = State.retreating;
                 break;
 
             case State.dead:
                 enemyAgent.isStopped = true;
                 state = State.dead;
-
-                if (managed) manager.NextObjective(parent, dialogueStrings);
-                else if (hasStrings)
-                {
-                    string[] output = new string[dialogueStrings.Length + 1];
-                    output[0] = "dialogue";
-
-                    Array.Copy(dialogueStrings, 0, output, 1, dialogueStrings.Length);
-                    screenManager.SetScreen(output);
-                }
-
+                RunComplete();
                 break;
 
             default:
@@ -372,7 +337,10 @@ public class EnemyController : MonoBehaviour
                 vulnerable = false;
                 lives--;
 
-                if (lives == 0) SetState(State.dead);
+                if (lives == 0)
+                {
+                    SetState(State.dead);
+                }
             }
         }
     }
