@@ -138,6 +138,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d9fbc33ef3fd941a41e861674ca26b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  subjectObject: {fileID: 0}
+  preStrings: []
+  postStrings: []
   state: 0
   enemyAgent: {fileID: 0}
   waypointList: []
@@ -14193,6 +14196,7 @@ GameObject:
   - component: {fileID: 1952927771191955827}
   - component: {fileID: 7031613058431587109}
   - component: {fileID: 7618353601355871264}
+  - component: {fileID: 2821484883883398176}
   m_Layer: 0
   m_Name: Barrel
   m_TagString: Untagged
@@ -17051,3 +17055,16 @@ HingeJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!65 &2821484883883398176
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6529839837766050479}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.6000003, y: 2.2156281, z: 0.5706342}
+  m_Center: {x: 4.5607837e-13, y: -1.3046749, z: -0.0000019073477}

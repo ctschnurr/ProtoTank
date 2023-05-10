@@ -39,7 +39,11 @@ public class Objective : MonoBehaviour
 
     public void RunComplete()
     {
-        if (managed == true) missionManager.NextObjective(subjectObject, postStrings);
+        if (managed == true)
+        {
+            missionManager.NextObjective(subjectObject, postStrings);
+        }
+
         else if (hasPostStrings)
         {
             string[] output = new string[postStrings.Length + 1];

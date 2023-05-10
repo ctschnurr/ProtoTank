@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class EnemyController : Objective
+public class EnemyTankController : Objective
 {
     public enum State
     {
@@ -106,6 +106,7 @@ public class EnemyController : Objective
 
         enemyAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         parent = transform.gameObject;
+        subjectObject = parent;
 
         chassis = parent.transform.Find("EnemyChassis").gameObject;
         barrel = parent.transform.Find("EnemyChassis/EnemyBarrel").gameObject;
@@ -311,6 +312,7 @@ public class EnemyController : Objective
                 break;
 
             case State.retreating:
+                retreatTarget = ClosestWaypoint(waypointList);
                 state = State.retreating;
                 break;
 

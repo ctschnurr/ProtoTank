@@ -317,11 +317,13 @@ public class MissionManager : MonoBehaviour
     public void NextObjective(GameObject input, string[] dialogue)
     {
         GameObject parent = input.transform.parent.gameObject;
-        int left = parent.transform.childCount;
-        left--;
+        int left = 0;
 
         if (parent.tag == "ObjectiveGroup")
         {
+            input.transform.SetParent(null);
+            left = parent.transform.childCount;
+
             if (left > 0)
             {
                 output = new string[dialogue.Length + 2];
