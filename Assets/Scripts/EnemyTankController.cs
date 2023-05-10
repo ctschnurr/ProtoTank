@@ -60,7 +60,7 @@ public class EnemyTankController : Objective
     Vector3 playerLastPosition = new Vector3(0, 0, 0);
     Vector3 targetDirection;
 
-    float attackRotateSpeed = 0.25f;
+    float attackRotateSpeed = 1f;
 
     public float barrelV;
     bool enemyActive = false;
@@ -153,7 +153,8 @@ public class EnemyTankController : Objective
 
         if (enemyActive)
         {
-            enemyAgent.isStopped = false;
+            // enemyAgent.isStopped = false;
+            if (Vector3.Distance(playerPosition, transform.position) > 25) SetState(State.patrolling);
 
             switch (state)
             {
@@ -227,7 +228,7 @@ public class EnemyTankController : Objective
                     newDirection.y = 0;
                     chassis.transform.rotation = Quaternion.LookRotation(newDirection);
 
-                    if (Vector3.Distance(playerPosition, transform.position) > 15) SetState(State.tracking);
+                    if (Vector3.Distance(playerPosition, transform.position) > 20) SetState(State.tracking);
                     if (Vector3.Distance(transform.position, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
                     break;
 

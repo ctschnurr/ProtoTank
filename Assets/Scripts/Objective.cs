@@ -41,6 +41,7 @@ public class Objective : MonoBehaviour
     {
         if (managed == true)
         {
+
             missionManager.NextObjective(subjectObject, postStrings);
         }
 
@@ -57,5 +58,10 @@ public class Objective : MonoBehaviour
     public string[] GetPreStrings()
     {
         return preStrings;
+    }
+
+    public string[] GetPostStrings()
+    {
+        return postStrings;
     }
 }

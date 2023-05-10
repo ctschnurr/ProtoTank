@@ -364,10 +364,17 @@ public class ScreenManager : MonoBehaviour
     void TakeHeart()
     {
         playerLives = player.GetLives();
-        Debug.Log(playerLives);
         if (playerLives == 1) heartTarget = heartA;
         else if (playerLives == 2) heartTarget = heartB;
         else if (playerLives == 3) heartTarget = heartC;
         state = State.fadeHeart;
+    }
+
+    public void ResetHearts()
+    {
+        heartTempColor.a = 1;
+        heartA.GetComponent<Image>().color = heartTempColor; ;
+        heartB.GetComponent<Image>().color = heartTempColor; ;
+        heartC.GetComponent<Image>().color = heartTempColor; ;
     }
 }

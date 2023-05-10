@@ -85,6 +85,9 @@ public class PlayerController : MonoBehaviour
     public delegate void PlayerDamageAction();
     public static event PlayerDamageAction OnPlayerDamage;
 
+    public delegate void PlayerDeadAction();
+    public static event PlayerDeadAction OnPlayerDead;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -146,6 +149,12 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.identity;
         chassis.transform.rotation = Quaternion.identity;
         lives = livesMax;
+        screenManager.ResetHearts();
+
+        bodyRenderer.material.color = normalColor;
+        chassisRenderer.material.color = normalColor;
+        leftTreadRenderer.material.color = normalColor;
+        rightTreadRenderer.material.color = normalColor;
     }
 
     // Update is called once per frame
@@ -257,8 +266,6 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case State.dead:
-                gameManager.SetState(GameManager.State.dead);
-
                 bodyRenderer.material.color = damageColor;
                 chassisRenderer.material.color = damageColor;
                 leftTreadRenderer.material.color = damageColor;
@@ -326,7 +333,11 @@ public class PlayerController : MonoBehaviour
                 vulnerable = false;
                 lives--;
 
-                if (lives == 0) state = State.dead;
+                if (lives == 0)
+                {
+                    state = State.dead;
+                    PlayerDead();
+                }
             }            
         }
     }
@@ -372,6 +383,14 @@ public class PlayerController : MonoBehaviour
         if (OnPlayerDamage != null)
         {
             OnPlayerDamage();
+        }
+    }
+
+    public void PlayerDead()
+    {
+        if (OnPlayerDead != null)
+        {
+            OnPlayerDead();
         }
     }
 }

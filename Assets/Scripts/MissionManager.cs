@@ -10,10 +10,10 @@ public class MissionManager : MonoBehaviour
     static ScreenManager screenManager;
     static PlayerController player;
 
-    int endMissionDelay = 5;
+    static int endMissionDelay = 5;
 
     GameObject playerObj;
-    GameObject parent;
+    static GameObject parent;
     GameObject nextCheckPoint;
     GameObject reference;
 
@@ -25,10 +25,14 @@ public class MissionManager : MonoBehaviour
     {
         idle,
         missionStart,
-        missionStop,
+        missionComplete,
+        missionFailed,
         missionNext,
         advanceMission
     }
+
+    static string[] missionPreString;
+    static string[] missionPostString;
 
     static State state = State.idle;
 
@@ -41,7 +45,8 @@ public class MissionManager : MonoBehaviour
     static List<GameObject>[] missions;
 
     static bool missionStart = false;
-    static bool missionEnd = false;
+    static bool missionComplete = false;
+    static bool missionFailed = false;
     static bool missionNext = false;
 
     static Queue<State> missionQueue;
@@ -83,6 +88,7 @@ public class MissionManager : MonoBehaviour
 
         DialogueManager.OnDialogueEnd += NextStage;
         ScreenManager.OnFadeOutComplete += NextStage;
+        PlayerController.OnPlayerDead += PlayerDead;
 
         missionQueue = new Queue<State>();
 
@@ -91,6 +97,7 @@ public class MissionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(timer + "/" + missionQueue.Count + "/" + state);
         if (missionQueue.Count != 0 && state == State.idle)
         {
             if (countDown)
@@ -107,6 +114,10 @@ public class MissionManager : MonoBehaviour
 
     public static void StartMission()
     {
+        Objective reference = parent.transform.GetChild(currentMission).GetComponent<Objective>();
+        missionPreString = reference.GetPreStrings();
+        missionPostString = reference.GetPostStrings();
+
         stage = 0;
         timer = 1;
         missionStart = true;
@@ -119,10 +130,15 @@ public class MissionManager : MonoBehaviour
     {
         switch (input)
         {
-            case State.missionStop:
-                missionEnd = true;
+            case State.missionComplete:
+                missionComplete = true;
                 stage = 0;
+                break;
 
+            case State.missionFailed:
+                Debug.Log("SetState");
+                missionFailed = true;
+                stage = 0;
                 break;
 
             case State.missionNext:
@@ -147,7 +163,7 @@ public class MissionManager : MonoBehaviour
                 case 0:
                     output = new string[2];
                     output[0] = "missionStart";
-                    output[1] = "Mission " + (currentMission +1) + ": \n\nWelcome to basic training! To start we're going to run through some exercises.";
+                    output[1] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
                     screenManager.SetScreen(output);
 
                     stage++;
@@ -156,13 +172,8 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 1:
-                    //output = new string[1];
-                    //output[0] = "clear";
-                    //screenManager.SetScreen(output);
-
                     gameManager.SetState(GameManager.State.active);
 
-                    //timer = 1;
                     stage++;
                     next = State.advanceMission;
                     missionQueue.Enqueue(next);
@@ -188,6 +199,7 @@ public class MissionManager : MonoBehaviour
                     stage++;
                     next = State.advanceMission;
                     missionQueue.Enqueue(next);
+
                     state = State.idle;
                     break;
 
@@ -206,11 +218,12 @@ public class MissionManager : MonoBehaviour
                     screenManager.SetScreen(output);
 
                     missionStart = false;
+                    state = State.idle;
                     break;
             }
         }
 
-        if (missionEnd)
+        if (missionComplete)
         {
             output = new string[1];
             output[0] = "HUD";
@@ -218,7 +231,7 @@ public class MissionManager : MonoBehaviour
 
             output = new string[2];
             output[0] = "missionComplete";
-            output[1] = "\nGood work! \n\n Time:\n Attempts:\n\nClick CONTINUE to move on to the next mission!";
+            output[1] = "\nGood work! \n\n Time:\n Attempts: \n\n" + missionPostString[0];
             screenManager.SetScreen(output);
 
             gameManager.SetState(GameManager.State.inactive);
@@ -227,8 +240,31 @@ public class MissionManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            missionEnd = false;
+            currentMission++;
 
+            missionComplete = false;
+        }
+
+        if (missionFailed)
+        {
+
+            Debug.Log("Failed");
+            output = new string[1];
+            output[0] = "HUD";
+            screenManager.SetScreen(output);
+
+            output = new string[2];
+            output[0] = "missionFailed";
+            output[1] = "\nOh no!\n\nYour tank has been destroyed!\n\nChin up, soldier, we'll get 'em next time!";
+            screenManager.SetScreen(output);
+
+            gameManager.SetState(GameManager.State.inactive);
+            player.SetState(PlayerController.State.controlDisabled);
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            missionFailed = false;
         }
 
         if (missionNext)
@@ -255,7 +291,6 @@ public class MissionManager : MonoBehaviour
 
                 case 1:
                     player.Reset();
-                    currentMission++;
                     stage++;
                     next = State.advanceMission;
                     missionQueue.Enqueue(next);
@@ -282,6 +317,11 @@ public class MissionManager : MonoBehaviour
         State next = State.missionNext;
         missionQueue.Enqueue(next);
         state = State.idle;
+    }
+
+    public void RestartMission()
+    {
+
     }
 
     public GameObject GetNextCheckpoint()
@@ -341,12 +381,7 @@ public class MissionManager : MonoBehaviour
         {
             reference = input;
             missions[currentMission].Remove(reference);
-            
-            // output = new string[dialogue.Length + 1];
-            // output[0] = "dialogue";
-            // 
-            // Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-            // screenManager.SetScreen(output);
+
         }
 
         if (missions[currentMission].Count != 0)
@@ -433,7 +468,7 @@ public class MissionManager : MonoBehaviour
     public void EndMission()
     {
         timer = endMissionDelay;
-        State next = State.missionStop;
+        State next = State.missionComplete;
         missionQueue.Enqueue(next);
     }
 
@@ -441,5 +476,13 @@ public class MissionManager : MonoBehaviour
     {
         state = State.idle;
         countDown = true;
+    }
+
+    static void PlayerDead()
+    {
+        timer = 2;
+        countDown = true;
+        State next = State.missionFailed;
+        missionQueue.Enqueue(next);
     }
 }
