@@ -21,6 +21,7 @@ public class Objective : MonoBehaviour
     protected bool hasPostStrings = false;
 
     protected Shader tpShader;
+    protected Shader normalShader;
 
     protected Vector3 spawnPoint;
 
@@ -29,10 +30,6 @@ public class Objective : MonoBehaviour
     {
         playerController = GameObject.Find("Player").GetComponent<PlayerController>();
         playerObject = GameObject.Find("Player");
-
-        tpShader = Shader.Find("Transparent/Diffuse");
-
-        spawnPoint = transform.position;
     }
 
     // Update is called once per frame

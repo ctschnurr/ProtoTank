@@ -389,7 +389,6 @@ public class EnemyTankController : Objective
 
     void Reset()
     {
-        Debug.Log("EnemyReset");
         if (transform.position != spawnPoint)
         {
             transform.position = spawnPoint;

@@ -14,6 +14,8 @@ public class DroneController : Objective
     public State state = State.patrolling;
     public UnityEngine.AI.NavMeshAgent enemyDrone;
 
+    static System.Random waypointRand = new System.Random();
+
     GameObject parent;
     GameObject body;
 
@@ -38,6 +40,10 @@ public class DroneController : Objective
     float fadeSpeed = 0.1f;
 
     public Component[] droneParts;
+    public Vector3[] resetPositions;
+    public Quaternion[] resetRotations;
+
+    Color tempcolor;
 
     // Start is called before the first frame update
     void Start()
@@ -58,13 +64,15 @@ public class DroneController : Objective
         waypoint4 = GameObject.Find("waypoint4").transform;
         waypoint5 = GameObject.Find("waypoint5").transform;
 
-        nextWaypoint = waypoint1;
-
         waypointList.Add(waypoint1);
         waypointList.Add(waypoint2);
         waypointList.Add(waypoint3);
         waypointList.Add(waypoint4);
         waypointList.Add(waypoint5);
+
+        nextWaypoint = NextWaypoint(waypoint1);
+
+        spawnPoint = transform.position;
 
         speed *= Time.deltaTime;
         posChange = new Vector3(0, speed, 0);
@@ -72,13 +80,21 @@ public class DroneController : Objective
 
         fadeSpeed *= Time.deltaTime;
 
+        droneParts = GetComponentsInChildren<Renderer>();
+
         int numberOfPieces = body.transform.childCount;
         pieces = new List<GameObject>();
+
+        resetPositions = new Vector3[numberOfPieces];
+        resetRotations = new Quaternion[numberOfPieces];
 
         for (int i = 0; i < numberOfPieces; i++)
         {
             Transform dronePieceTransform = body.transform.GetChild(i);
             GameObject dronePiece = dronePieceTransform.gameObject;
+
+            resetPositions[i] = dronePiece.transform.localPosition;
+            resetRotations[i] = dronePiece.transform.localRotation;
 
             pieces.Add(dronePiece);
         }
@@ -89,6 +105,9 @@ public class DroneController : Objective
         }
 
         tpShader = Shader.Find("Transparent/Diffuse");
+        normalShader = Shader.Find("Standard");
+
+        MissionManager.OnRunReset += Reset;
     }
 
     // Update is called once per frame
@@ -120,19 +139,17 @@ public class DroneController : Objective
 
                     if (decay_timer < 0)
                     {
-                        droneParts = GetComponentsInChildren<Renderer>();
-
                         foreach (Renderer partRenderer in droneParts)
                         {
                             partRenderer.material.shader = tpShader;
 
-                            Color tempcolor = partRenderer.material.color;
+                            tempcolor = partRenderer.material.color;
                             tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, 0.005f);
                             partRenderer.material.color = tempcolor;
 
                             if(tempcolor.a == 0)
                             {
-                                Destroy(parent);
+                                parent.gameObject.SetActive(false);
                             }
                         }
                     }
@@ -147,10 +164,7 @@ public class DroneController : Objective
 
     Transform NextWaypoint(Transform input)
     {
-        // waypointList.Remove(input);
-        // waypointList.Add(input);
-
-        int waypointRandom = UnityEngine.Random.Range(1, waypointList.Count);
+        int waypointRandom = waypointRand.Next(1, waypointList.Count);
 
         return waypointList[waypointRandom];
     }
@@ -167,6 +181,41 @@ public class DroneController : Objective
             {
                 piece.GetComponent<Rigidbody>().isKinematic = false;
             }
+        }
+    }
+
+    void Reset()
+    {
+        if (transform.position != spawnPoint)
+        {
+            transform.position = spawnPoint;
+            transform.rotation = Quaternion.identity;
+        }
+
+        if (state == State.dead)
+        {
+
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                GameObject piece = pieces[i];
+
+                piece.SetActive(true);
+                piece.GetComponent<Rigidbody>().isKinematic = true;
+
+                piece.transform.localPosition = resetPositions[i];
+                piece.transform.localRotation = resetRotations[i];
+            }
+
+            foreach (Renderer partRenderer in droneParts)
+            {
+                tempcolor = partRenderer.material.color;
+                tempcolor.a = 1f;
+                partRenderer.material.color = tempcolor;
+
+                partRenderer.material.shader = normalShader;
+            }
+
+            state = State.patrolling;
         }
     }
 }

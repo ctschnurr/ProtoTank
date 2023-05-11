@@ -149,7 +149,9 @@ public class PlayerController : MonoBehaviour
     {
         transform.position = reset;
         transform.rotation = Quaternion.identity;
+        barrelControl(0, 0);
         chassis.transform.rotation = Quaternion.identity;
+        barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
         lives = livesMax;
 
         bodyRenderer.material.color = normalColor;

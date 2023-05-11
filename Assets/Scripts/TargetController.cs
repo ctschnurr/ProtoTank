@@ -17,11 +17,19 @@ public class TargetController : Objective
 
     GameObject parent;
 
-    float decay_timer = 0.0f;
+    float decay_timer = 5f;
     float fadeSpeed = 0.5f;
 
     bool destroyed = false;
     bool countMe = false;
+
+    public Component[] targetParts;
+    public List<GameObject> pieces;
+
+    public Vector3[] resetPositions;
+    public Quaternion[] resetRotations;
+
+    public Color tempcolor;
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +51,25 @@ public class TargetController : Objective
         decay_timer = decay_timer * Time.deltaTime;
         fadeSpeed = fadeSpeed * Time.deltaTime;
 
+        targetParts = GetComponentsInChildren<Renderer>();
+
+        int numberOfPieces = parent.transform.childCount;
+        pieces = new List<GameObject>();
+
+        resetPositions = new Vector3[numberOfPieces];
+        resetRotations = new Quaternion[numberOfPieces];
+
+        for (int i = 0; i < numberOfPieces; i++)
+        {
+            Transform targetPieceTransform = parent.transform.GetChild(i);
+            GameObject targetPiece = targetPieceTransform.gameObject;
+
+            resetPositions[i] = targetPiece.transform.localPosition;
+            resetRotations[i] = targetPiece.transform.localRotation;
+
+            pieces.Add(targetPiece);
+        }
+
         if (transform.parent != null)
         {
             if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
@@ -51,7 +78,10 @@ public class TargetController : Objective
         if (preStrings.Length > 0) hasPreStrings = true;
         if (postStrings.Length > 0) hasPostStrings = true;
 
+        tpShader = Shader.Find("Transparent/Diffuse");
+        normalShader = Shader.Find("Standard");
 
+        MissionManager.OnRunReset += Reset;
     }
 
     // Update is called once per frame
@@ -59,23 +89,23 @@ public class TargetController : Objective
     {
         if (destroyed)
         {
-            decay_timer += 0.05f;
+            decay_timer -= Time.deltaTime;
 
-            if (decay_timer > 10)
+            if (decay_timer < 0)
             {
-                Color tempcolor = TargetA.GetComponent<Renderer>().material.color;
-                tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, fadeSpeed);
-                
-                TargetA.GetComponent<Renderer>().material.color = tempcolor;
-                TargetB.GetComponent<Renderer>().material.color = tempcolor;
-                TargetC.GetComponent<Renderer>().material.color = tempcolor;
-                TargetD.GetComponent<Renderer>().material.color = tempcolor;
-                TargetE.GetComponent<Renderer>().material.color = tempcolor;
-                TargetF.GetComponent<Renderer>().material.color = tempcolor;
-                TargetG.GetComponent<Renderer>().material.color = tempcolor;
-                TargetH.GetComponent<Renderer>().material.color = tempcolor;
+                foreach (Renderer partRenderer in targetParts)
+                {
+                    partRenderer.material.shader = tpShader;
 
-                if (TargetA.GetComponent<Renderer>().material.color.a == 0) Destroy(gameObject);
+                    tempcolor = partRenderer.material.color;
+                    tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0f, 0.005f);
+                    partRenderer.material.color = tempcolor;
+
+                    if (tempcolor.a == 0)
+                    {
+                        gameObject.SetActive(false);
+                    }
+                }
             }
         }
     }
@@ -84,14 +114,10 @@ public class TargetController : Objective
     {
         if (collision.gameObject.tag == "Shell")
         {
-            TargetA.GetComponent<Rigidbody>().isKinematic = false;
-            TargetB.GetComponent<Rigidbody>().isKinematic = false;
-            TargetC.GetComponent<Rigidbody>().isKinematic = false;
-            TargetD.GetComponent<Rigidbody>().isKinematic = false;
-            TargetE.GetComponent<Rigidbody>().isKinematic = false;
-            TargetF.GetComponent<Rigidbody>().isKinematic = false;
-            TargetG.GetComponent<Rigidbody>().isKinematic = false;
-            TargetH.GetComponent<Rigidbody>().isKinematic = false;
+            foreach (GameObject piece in pieces)
+            {
+                piece.GetComponent<Rigidbody>().isKinematic = false;
+            }
             destroyed = true;
             countMe = true;
             RunComplete();
@@ -101,5 +127,34 @@ public class TargetController : Objective
     public bool GetCountMe()
     {
         return countMe;
+    }
+
+    void Reset()
+    {
+        if (destroyed)
+        {
+
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                GameObject piece = pieces[i];
+
+                piece.SetActive(true);
+                piece.GetComponent<Rigidbody>().isKinematic = true;
+
+                piece.transform.localPosition = resetPositions[i];
+                piece.transform.localRotation = resetRotations[i];
+            }
+
+            foreach (Renderer partRenderer in targetParts)
+            {
+                tempcolor = partRenderer.material.color;
+                tempcolor.a = 1f;
+                partRenderer.material.color = tempcolor;
+
+                partRenderer.material.shader = normalShader;
+            }
+
+            destroyed = false;
+        }
     }
 }
