@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
 
     float barrelH;
     float barrelV;
-
+    float barrelVert;
     float barrelVertical = 50.0f;
 
     float camH;
@@ -64,7 +64,8 @@ public class PlayerController : MonoBehaviour
     Vector3 currentAngle;
     Vector3 nextAngle;
 
-    static Vector3 reset;
+    static Vector3 resetPos;
+    static Quaternion resetRot;
     static Vector3 respawn;
 
     public float fliptimer;
@@ -117,7 +118,8 @@ public class PlayerController : MonoBehaviour
 
         lastShotTimer = Time.time;
 
-        reset = transform.position;
+        resetPos = transform.position;
+        resetRot = transform.localRotation;
         // reset.y += 1;
 
         moveSpeed = moveSpeed * Time.deltaTime;
@@ -128,6 +130,7 @@ public class PlayerController : MonoBehaviour
         damageColor = new Color(1, 1, 1);
 
         barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
+        camController.transform.localRotation = Quaternion.Euler(-10, 0, 0);
 
         pointerSizeSpeed += Time.deltaTime;
         pointerSizeChange = new Vector3(pointerSizeSpeed, pointerSizeSpeed, pointerSizeSpeed);
@@ -153,10 +156,10 @@ public class PlayerController : MonoBehaviour
 
     public void Reset()
     {
-        transform.position = reset;
-        transform.rotation = Quaternion.identity;
+        transform.position = resetPos;
+        transform.rotation = resetRot;
         barrelControl(0, 0);
-        chassis.transform.rotation = Quaternion.identity;
+        chassis.transform.localRotation = Quaternion.identity;
         barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
         lives = livesMax;
 
@@ -197,7 +200,6 @@ public class PlayerController : MonoBehaviour
 
                 float camHorizontal = camH + Input.GetAxis("Mouse X") * barrelSpeed;
 
-                // barrelVertical -= barrelVertical;
                 barrelControl(barrelHorizontal, barrelVertical);
 
                 if (Input.GetMouseButton(0))
@@ -308,7 +310,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 checkpointPointer.transform.localScale += pointerSizeChange;
-                if (checkpointPointer.transform.localScale.x >= 0.4f)
+                if (checkpointPointer.transform.localScale.x >= 0.25f)
                 {
 
                     pointerToggle = false;

@@ -188,7 +188,7 @@ public class MissionManager : MonoBehaviour
                 case 2:
                     output = new string[2];
                     output[0] = "dialogue";
-                    output[1] = "Let's fire up your HUD and activate your waypoint compass. Please proceed to the first checkpoint!";
+                    output[1] = "Please standby while I activate your HUD and waypoint compass.";
                     screenManager.SetScreen(output);
 
                     stage++;
@@ -450,7 +450,7 @@ public class MissionManager : MonoBehaviour
                         Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
                         screenManager.SetScreen(output);
                     }
-                    else
+                    else if (dialogue[0] != "pass")
                     {
                         output = new string[(dialogue.Length + 1)];
                         output[0] = "dialogue";
@@ -458,8 +458,9 @@ public class MissionManager : MonoBehaviour
                         Array.Copy(dialogue, 0, output, 1, dialogue.Length);
                         screenManager.SetScreen(output);
                     }
-
                 }
+
+                dialogue[0] = "pass";
             }
         }
         else
