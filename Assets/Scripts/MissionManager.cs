@@ -18,7 +18,7 @@ public class MissionManager : MonoBehaviour
     GameObject reference;
 
     GameObject missionFolder1;
-    int numberOfMissions;
+    static int numberOfMissions;
     static int currentMission = 0;
 
     public enum State
@@ -53,6 +53,9 @@ public class MissionManager : MonoBehaviour
 
     public static Objective objReference;
 
+    public delegate void RunResetAction();
+    public static event RunResetAction OnRunReset;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -64,6 +67,18 @@ public class MissionManager : MonoBehaviour
 
         parent = transform.gameObject;
 
+        SetMissions();
+
+        DialogueManager.OnDialogueEnd += NextStage;
+        ScreenManager.OnFadeOutComplete += NextStage;
+        PlayerController.OnPlayerDead += PlayerDead;
+
+        missionQueue = new Queue<State>();
+
+    }
+
+    public static void SetMissions()
+    {
         numberOfMissions = parent.transform.childCount;
         missions = new List<GameObject>[numberOfMissions];
 
@@ -85,19 +100,11 @@ public class MissionManager : MonoBehaviour
                 missionObjective.SetActive(false);
             }
         }
-
-        DialogueManager.OnDialogueEnd += NextStage;
-        ScreenManager.OnFadeOutComplete += NextStage;
-        PlayerController.OnPlayerDead += PlayerDead;
-
-        missionQueue = new Queue<State>();
-
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(timer + "/" + missionQueue.Count + "/" + state);
         if (missionQueue.Count != 0 && state == State.idle)
         {
             if (countDown)
@@ -136,7 +143,6 @@ public class MissionManager : MonoBehaviour
                 break;
 
             case State.missionFailed:
-                Debug.Log("SetState");
                 missionFailed = true;
                 stage = 0;
                 break;
@@ -247,8 +253,6 @@ public class MissionManager : MonoBehaviour
 
         if (missionFailed)
         {
-
-            Debug.Log("Failed");
             output = new string[1];
             output[0] = "HUD";
             screenManager.SetScreen(output);
@@ -281,16 +285,17 @@ public class MissionManager : MonoBehaviour
                     output[0] = "clear";
                     screenManager.SetScreen(output);
 
-                    timer = 2;
+                    // timer = 2;
+                    // state = State.idle;
+                    
                     stage++;
-                    state = State.idle;
 
                     State next = State.advanceMission;
                     missionQueue.Enqueue(next);
                     break;
 
                 case 1:
-                    player.Reset();
+                    RunReset();
                     stage++;
                     next = State.advanceMission;
                     missionQueue.Enqueue(next);
@@ -319,9 +324,13 @@ public class MissionManager : MonoBehaviour
         state = State.idle;
     }
 
-    public void RestartMission()
+    static public void RunReset()
     {
-
+        if (OnRunReset != null)
+        {
+            OnRunReset();
+        }
+        SetMissions();
     }
 
     public GameObject GetNextCheckpoint()
@@ -481,7 +490,7 @@ public class MissionManager : MonoBehaviour
     static void PlayerDead()
     {
         timer = 2;
-        countDown = true;
+        //countDown = true;
         State next = State.missionFailed;
         missionQueue.Enqueue(next);
     }

@@ -22,6 +22,8 @@ public class Objective : MonoBehaviour
 
     protected Shader tpShader;
 
+    protected Vector3 spawnPoint;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,6 +31,8 @@ public class Objective : MonoBehaviour
         playerObject = GameObject.Find("Player");
 
         tpShader = Shader.Find("Transparent/Diffuse");
+
+        spawnPoint = transform.position;
     }
 
     // Update is called once per frame

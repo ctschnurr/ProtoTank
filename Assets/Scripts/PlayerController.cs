@@ -127,6 +127,8 @@ public class PlayerController : MonoBehaviour
 
         pointerSizeSpeed += Time.deltaTime;
         pointerSizeChange = new Vector3(pointerSizeSpeed, pointerSizeSpeed, pointerSizeSpeed);
+
+        MissionManager.OnRunReset += Reset;
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -149,7 +151,6 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.identity;
         chassis.transform.rotation = Quaternion.identity;
         lives = livesMax;
-        screenManager.ResetHearts();
 
         bodyRenderer.material.color = normalColor;
         chassisRenderer.material.color = normalColor;
@@ -270,6 +271,8 @@ public class PlayerController : MonoBehaviour
                 chassisRenderer.material.color = damageColor;
                 leftTreadRenderer.material.color = damageColor;
                 rightTreadRenderer.material.color = damageColor;
+
+                gameManager.SetState(GameManager.State.inactive);
                 break;
         }
 
@@ -329,13 +332,14 @@ public class PlayerController : MonoBehaviour
             if (vulnerable)
             {
                 PlayerDamage();
-                damaged = true;
+                if (lives > 1) damaged = true;
                 vulnerable = false;
                 lives--;
 
                 if (lives == 0)
                 {
                     state = State.dead;
+                    pointerToggle = true;
                     PlayerDead();
                 }
             }            

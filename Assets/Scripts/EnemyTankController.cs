@@ -68,6 +68,7 @@ public class EnemyTankController : Objective
     bool vulnerable = true;
 
     int lives = 3;
+    int livesMax = 3;
 
     int damageCount = 6;
     int damageCountReset = 6;
@@ -76,12 +77,11 @@ public class EnemyTankController : Objective
     float damageTimerReset = 0.1f;
 
     Color normalColor;
+    Color normalColorBarrel;
     Color damageColor;
 
     Color torchedBarrel;
     Color torchedChassis;
-
-    Vector3 spawnPoint;
 
     // Start is called before the first frame update
     void Start()
@@ -96,13 +96,8 @@ public class EnemyTankController : Objective
         waypoint4 = GameObject.Find("waypoint4").transform;
         waypoint5 = GameObject.Find("waypoint5").transform;
 
-        nextWaypoint = waypoint1;
-
-        waypointList.Add(waypoint1);
-        waypointList.Add(waypoint2);
-        waypointList.Add(waypoint3);
-        waypointList.Add(waypoint4);
-        waypointList.Add(waypoint5);
+        SetWaypoints();
+        spawnPoint = transform.position;
 
         enemyAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         parent = transform.gameObject;
@@ -120,17 +115,16 @@ public class EnemyTankController : Objective
         leftTreadRenderer = parent.transform.Find("TreadSkirtL").GetComponent<Renderer>();
         rightTreadRenderer = parent.transform.Find("TreadSkirtR").GetComponent<Renderer>();
 
-        spawnPoint = transform.position;
-
         barrel.transform.localRotation = Quaternion.Euler(80, 0, 0);
 
         attackRotateSpeed = attackRotateSpeed * Time.deltaTime;
         lastShotTimer = Time.time;
 
         normalColor = bodyRenderer.material.color;
+        normalColorBarrel = barrelRenderer.material.color;
         damageColor = new Color(1, 1, 1);
 
-        torchedBarrel = barrelRenderer.material.color;
+        torchedBarrel = normalColorBarrel;
         torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
         torchedChassis = new Color(normalColor.r - 0.8f, normalColor.g - 0.8f, normalColor.b - 0.8f);
 
@@ -140,6 +134,21 @@ public class EnemyTankController : Objective
         }
 
         tpShader = Shader.Find("Transparent/Diffuse");
+
+        MissionManager.OnRunReset += Reset;
+    }
+
+    void SetWaypoints()
+    {
+        waypointList.Clear();
+
+        waypointList.Add(waypoint1);
+        waypointList.Add(waypoint2);
+        waypointList.Add(waypoint3);
+        waypointList.Add(waypoint4);
+        waypointList.Add(waypoint5);
+
+        nextWaypoint = waypoint1;
     }
 
     // Update is called once per frame
@@ -153,9 +162,6 @@ public class EnemyTankController : Objective
 
         if (enemyActive)
         {
-            // enemyAgent.isStopped = false;
-            if (Vector3.Distance(playerPosition, transform.position) > 25) SetState(State.patrolling);
-
             switch (state)
             {
                 case State.patrolling:
@@ -230,6 +236,7 @@ public class EnemyTankController : Objective
 
                     if (Vector3.Distance(playerPosition, transform.position) > 20) SetState(State.tracking);
                     if (Vector3.Distance(transform.position, retreatTarget.position) < 1) retreatTarget = ClosestWaypoint(waypointList);
+                    if (Vector3.Distance(playerPosition, transform.position) > 30) SetState(State.patrolling);
                     break;
 
                 case State.dead:
@@ -377,6 +384,32 @@ public class EnemyTankController : Objective
             damaged = false;
             vulnerable = true;
             damageCount = damageCountReset;
+        }
+    }
+
+    void Reset()
+    {
+        Debug.Log("EnemyReset");
+        if (transform.position != spawnPoint)
+        {
+            transform.position = spawnPoint;
+            transform.rotation = Quaternion.identity;
+        }
+
+        lives = livesMax;
+        if (state == State.dead)
+        {
+            barrelObj.GetComponent<Rigidbody>().isKinematic = true;
+            barrel.transform.localRotation = Quaternion.Euler(80, 0, 0);
+
+            barrelRenderer.material.color = normalColorBarrel;
+            chassisRenderer.material.color = normalColor;
+            bodyRenderer.material.color = normalColor;
+            leftTreadRenderer.material.color = normalColor;
+            rightTreadRenderer.material.color = normalColor;
+
+            SetWaypoints();
+            SetState(State.patrolling);
         }
     }
 }

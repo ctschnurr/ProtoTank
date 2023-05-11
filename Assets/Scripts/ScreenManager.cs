@@ -126,6 +126,7 @@ public class ScreenManager : MonoBehaviour
 
         DialogueManager.OnDialogueEnd += DialogueOver;
         PlayerController.OnPlayerDamage += TakeHeart;
+        MissionManager.OnRunReset += ResetHearts;
     }
 
     // Update is called once per frame
@@ -221,7 +222,7 @@ public class ScreenManager : MonoBehaviour
                 else
                 {
                     state = State.idle;
-                    //FadeOutComplete();
+                    FadeOutComplete();
                 }
                 break;
 
@@ -372,9 +373,12 @@ public class ScreenManager : MonoBehaviour
 
     public void ResetHearts()
     {
-        heartTempColor.a = 1;
-        heartA.GetComponent<Image>().color = heartTempColor; ;
-        heartB.GetComponent<Image>().color = heartTempColor; ;
-        heartC.GetComponent<Image>().color = heartTempColor; ;
+        heartTempColor.a = 1.0f;
+        heartA.GetComponent<Image>().color = heartTempColor;
+        heartA.SetActive(true);
+        heartB.GetComponent<Image>().color = heartTempColor;
+        heartB.SetActive(true);
+        heartC.GetComponent<Image>().color = heartTempColor;
+        heartC.SetActive(true);
     }
 }
