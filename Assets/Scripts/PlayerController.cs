@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     bool throttle = false;
     GameObject chassis;
     GameObject barrel;
+    GameObject camController;
     GameObject player;
 
     Renderer bodyRenderer;
@@ -50,12 +51,14 @@ public class PlayerController : MonoBehaviour
     float barrelH;
     float barrelV;
 
+    float barrelVertical = 50.0f;
+
+    float camH;
+
     float vert;
 
     float ShootDelay = 1;
     float lastShotTimer;
-
-    float barrelVertical = 50.0f;
 
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
     Vector3 currentAngle;
@@ -95,7 +98,8 @@ public class PlayerController : MonoBehaviour
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
 
-        checkpointPointer = GameObject.Find("Player/ChassisRotater/WaypointPointer");
+        camController = GameObject.Find("Player/CamController");
+        checkpointPointer = GameObject.Find("Player/CamController/WaypointPointer");
         checkpointPointer.SetActive(false);
 
         controlsScreen = GameObject.Find("ControlsScreen");
@@ -137,6 +141,8 @@ public class PlayerController : MonoBehaviour
         barrelV = Mathf.Clamp(vertical, 60, 80);
         chassis.transform.localRotation = Quaternion.Euler(0, barrelH, 0);
         barrel.transform.localRotation = Quaternion.Euler(barrelV, 0, 0);
+
+        camController.transform.localRotation = Quaternion.Euler(barrelV - 70, barrelH, 0);
     }
 
     public void Respawn()
@@ -186,9 +192,12 @@ public class PlayerController : MonoBehaviour
 
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)) transform.Rotate(0.0f, horiz, 0.0f);
 
-                float mouseY = Input.GetAxis("Mouse Y") * barrelSpeed;
+                float barrelVertical = barrelV + Input.GetAxis("Mouse Y") * barrelSpeed;
                 float barrelHorizontal = barrelH + Input.GetAxis("Mouse X") * barrelSpeed;
-                barrelVertical -= mouseY;
+
+                float camHorizontal = camH + Input.GetAxis("Mouse X") * barrelSpeed;
+
+                // barrelVertical -= barrelVertical;
                 barrelControl(barrelHorizontal, barrelVertical);
 
                 if (Input.GetMouseButton(0))
