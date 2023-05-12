@@ -11,6 +11,8 @@ public class Objective : MonoBehaviour
 
     PlayerController playerController;
     GameObject playerObject;
+
+    [HideInInspector]
     public GameObject subjectObject;
 
     public string[] preStrings;

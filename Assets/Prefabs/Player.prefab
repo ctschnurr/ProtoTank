@@ -110,8 +110,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c2e72f583fb9d046931b92050c5a5f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weapon: 0
   state: 0
   projectile: {fileID: 7987857650390157338, guid: b30dad5b0cfcae042a9a871e186c235f, type: 3}
+  projectile2: {fileID: 7987857650390157338, guid: df940247e57208340927f06029bc90f7, type: 3}
   launchVelocity: 1000
   fliptimer: 0
 --- !u!136 &921933832261277883

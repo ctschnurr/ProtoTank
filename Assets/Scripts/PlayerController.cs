@@ -16,6 +16,14 @@ public class PlayerController : MonoBehaviour
         dead
     }
 
+    public enum Weapon
+    {
+        smallShot,
+        bigShot
+    }
+
+    public Weapon weapon = Weapon.smallShot;
+
     public State state = State.controlEnabled;
 
     float moveSpeed = 100f;
@@ -45,6 +53,7 @@ public class PlayerController : MonoBehaviour
     GameObject controlsScreen;
 
     public GameObject projectile;
+    public GameObject projectile2;
     GameObject shotOrigin;
     public float launchVelocity = 1000f;
 
@@ -84,13 +93,19 @@ public class PlayerController : MonoBehaviour
     float damageTimerReset = 0.1f;
 
     int lives = 3;
-    int livesMax = 3;
+    int livesMax = 4;
 
     public delegate void PlayerDamageAction();
     public static event PlayerDamageAction OnPlayerDamage;
 
+    public delegate void PlayerHealAction();
+    public static event PlayerHealAction OnPlayerHeal;
+
     public delegate void PlayerDeadAction();
     public static event PlayerDeadAction OnPlayerDead;
+
+    public delegate void ToggleGunAction();
+    public static event ToggleGunAction OnToggleGun;
 
     // Start is called before the first frame update
     void Start()
@@ -170,6 +185,14 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
+    public void ToggleGun()
+    {
+        if (OnToggleGun != null)
+        {
+            OnToggleGun();
+        }
+    }
+
     void Update()
     {
 
@@ -206,8 +229,17 @@ public class PlayerController : MonoBehaviour
                 {
                     if ((Time.time - lastShotTimer > ShootDelay))
                     {
-                        GameObject shot = Instantiate(projectile, shotOrigin.transform.position, shotOrigin.transform.rotation);
-                        shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
+                        if(weapon == Weapon.smallShot)
+                        {
+                            GameObject shot = Instantiate(projectile, shotOrigin.transform.position, shotOrigin.transform.rotation);
+                            shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
+                        }
+                        else if(weapon == Weapon.bigShot)
+                        {
+                            GameObject shot = Instantiate(projectile2, shotOrigin.transform.position, shotOrigin.transform.rotation);
+                            shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
+                        }
+
 
                         lastShotTimer = Time.time;
                     }
@@ -238,6 +270,20 @@ public class PlayerController : MonoBehaviour
                 if (Input.GetKey(KeyCode.Space))
                 {
                     dialogueManager.SetSkip();
+                }
+
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    if (weapon == Weapon.smallShot)
+                    {
+                        weapon = Weapon.bigShot;
+                    }
+                    else if (weapon == Weapon.bigShot)
+                    {
+                        weapon = Weapon.smallShot;
+                    }
+
+                    ToggleGun();
                 }
 
                 if (Input.GetKeyDown(KeyCode.F) && flipped == false)
@@ -400,6 +446,24 @@ public class PlayerController : MonoBehaviour
         if (OnPlayerDamage != null)
         {
             OnPlayerDamage();
+        }
+    }
+
+    public void AddHealth(int healthAdd)
+    {
+        if (lives < livesMax)
+        {
+            lives += healthAdd;
+            if (lives > livesMax) lives = livesMax;
+            PlayerHeal();
+        }
+    }
+
+    public void PlayerHeal()
+    {
+        if (OnPlayerHeal != null)
+        {
+            OnPlayerHeal();
         }
     }
 

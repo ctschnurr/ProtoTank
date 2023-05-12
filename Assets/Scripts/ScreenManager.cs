@@ -23,7 +23,8 @@ public class ScreenManager : MonoBehaviour
         close,
         fadeOut,
         dialogue,
-        fadeHeart
+        fadeHeart,
+        addHeart
     }
 
     public enum Screen
@@ -51,9 +52,14 @@ public class ScreenManager : MonoBehaviour
     GameObject missionFailed;
     GameObject hud;
 
+    GameObject shotFrame;
+    Vector3 shotFrameRed;
+    Vector3 shotFrameBlack;
+
     GameObject heartA;
     GameObject heartB;
     GameObject heartC;
+    GameObject heartD;
     GameObject heartTarget;
     Color heartTempColor;
     int playerLives;
@@ -72,6 +78,8 @@ public class ScreenManager : MonoBehaviour
     string message;
 
     Queue<string[]> screenQueue;
+
+    int lifetracker = 3;
 
     public delegate void FadeOutCompleteAction();
     public static event FadeOutCompleteAction OnFadeOutComplete;
@@ -113,9 +121,16 @@ public class ScreenManager : MonoBehaviour
 
         hud = GameObject.Find("HUD");
 
+        shotFrame = GameObject.Find("HUD/ShotFrame");
+        shotFrameRed = shotFrame.transform.position;
+        shotFrameBlack = shotFrameRed;
+        shotFrameBlack.x += 125;
+
         heartA = GameObject.Find("HUD/HeartA");
         heartB = GameObject.Find("HUD/HeartB");
         heartC = GameObject.Find("HUD/HeartC");
+        heartD = GameObject.Find("HUD/HeartD");
+        heartD.SetActive(false);
         heartTarget = heartC;
 
         heartTempColor = heartTarget.GetComponent<Image>().color;
@@ -126,6 +141,8 @@ public class ScreenManager : MonoBehaviour
 
         DialogueManager.OnDialogueEnd += DialogueOver;
         PlayerController.OnPlayerDamage += TakeHeart;
+        PlayerController.OnPlayerHeal += AddHeart;
+        PlayerController.OnToggleGun += SwitchWeapon;
         MissionManager.OnRunReset += ResetHearts;
     }
 
@@ -238,7 +255,21 @@ public class ScreenManager : MonoBehaviour
                     heartTarget.SetActive(false);
                     state = State.idle;
                 }
-                break; 
+                break;
+
+            case State.addHeart:
+
+                if (heartTarget.GetComponent<Image>().color.a < 1)
+                {
+                    heartTempColor = heartTarget.GetComponent<Image>().color;
+                    heartTempColor.a = Mathf.MoveTowards(heartTempColor.a, 1f, fadeSpeed);
+                    heartTarget.GetComponent<Image>().color = heartTempColor;
+                }
+                else
+                {
+                    state = State.idle;
+                }
+                break;
         }
 
         if (screenQueue.Count != 0 && state == State.idle)
@@ -368,7 +399,24 @@ public class ScreenManager : MonoBehaviour
         if (playerLives == 1) heartTarget = heartA;
         else if (playerLives == 2) heartTarget = heartB;
         else if (playerLives == 3) heartTarget = heartC;
+        else if (playerLives == 4) heartTarget = heartD;
+
         state = State.fadeHeart;
+    }
+
+    void AddHeart()
+    {
+        playerLives = player.GetLives();
+        if (playerLives == 2) heartTarget = heartB;
+        else if (playerLives == 3) heartTarget = heartC;
+        else if (playerLives == 4) heartTarget = heartD;
+
+        if (heartTarget.activeSelf == false) heartTarget.SetActive(true);
+
+        heartTempColor.a = 0f;
+        heartTarget.GetComponent<Image>().color = heartTempColor;
+
+        state = State.addHeart;
     }
 
     public void ResetHearts()
@@ -380,5 +428,11 @@ public class ScreenManager : MonoBehaviour
         heartB.SetActive(true);
         heartC.GetComponent<Image>().color = heartTempColor;
         heartC.SetActive(true);
+    }
+
+    public void SwitchWeapon()
+    {
+        if (shotFrame.transform.position == shotFrameRed) shotFrame.transform.position = shotFrameBlack;
+        else if (shotFrame.transform.position == shotFrameBlack) shotFrame.transform.position = shotFrameRed;
     }
 }

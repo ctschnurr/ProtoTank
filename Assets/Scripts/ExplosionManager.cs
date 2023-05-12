@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ExplosionManager : MonoBehaviour
 {
-    float expandSpeed = 100f;
-    float fadeSpeed = 5f;
+    float expandSpeed = 75f;
+    float fadeSpeed = 3f;
     Vector3 scaleChange;
 
     // AudioSource bombSound;

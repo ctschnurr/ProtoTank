@@ -11,22 +11,25 @@ public class DroneController : Objective
         dead
     }
 
+    public GameObject waypointHolder;
+
+    [HideInInspector]
     public State state = State.patrolling;
+    [HideInInspector]
     public UnityEngine.AI.NavMeshAgent enemyDrone;
 
     static System.Random waypointRand = new System.Random();
+
+    static DroneController instance;
 
     GameObject parent;
     GameObject body;
 
     Transform nextWaypoint;
-    Transform waypoint1;
-    Transform waypoint2;
-    Transform waypoint3;
-    Transform waypoint4;
-    Transform waypoint5;
 
+    [HideInInspector]
     public List<Transform> waypointList;
+    [HideInInspector]
     public List<GameObject> pieces;
 
     bool enemyActive = false;
@@ -39,8 +42,11 @@ public class DroneController : Objective
     float decay_timer = 5.0f;
     float fadeSpeed = 0.1f;
 
+    [HideInInspector]
     public Component[] droneParts;
+    [HideInInspector]
     public Vector3[] resetPositions;
+    [HideInInspector]
     public Quaternion[] resetRotations;
 
     Color tempcolor;
@@ -57,20 +63,6 @@ public class DroneController : Objective
         parent = transform.gameObject;
         subjectObject = parent;
         body = parent.transform.Find("Body").gameObject;
-
-        waypoint1 = GameObject.Find("waypoint1").transform;
-        waypoint2 = GameObject.Find("waypoint2").transform;
-        waypoint3 = GameObject.Find("waypoint3").transform;
-        waypoint4 = GameObject.Find("waypoint4").transform;
-        waypoint5 = GameObject.Find("waypoint5").transform;
-
-        waypointList.Add(waypoint1);
-        waypointList.Add(waypoint2);
-        waypointList.Add(waypoint3);
-        waypointList.Add(waypoint4);
-        waypointList.Add(waypoint5);
-
-        nextWaypoint = NextWaypoint(waypoint1);
 
         spawnPoint = transform.position;
 
@@ -108,6 +100,11 @@ public class DroneController : Objective
         normalShader = Shader.Find("Standard");
 
         MissionManager.OnRunReset += Reset;
+
+        instance = this;
+
+        SetWaypoints();
+        nextWaypoint = NextWaypoint();
     }
 
     // Update is called once per frame
@@ -130,7 +127,7 @@ public class DroneController : Objective
                     if (up) body.transform.localPosition += posChange;
                     if (!up) body.transform.localPosition -= posChange;
 
-                    if (Vector3.Distance(nextWaypoint.position, transform.position) < 1) nextWaypoint = NextWaypoint(nextWaypoint);
+                    if (Vector3.Distance(nextWaypoint.position, transform.position) < 1) nextWaypoint = NextWaypoint();
                     break;
 
                 case State.dead:
@@ -162,16 +159,28 @@ public class DroneController : Objective
         }
     }
 
-    Transform NextWaypoint(Transform input)
+    public static void SetWaypoints()
     {
-        int waypointRandom = waypointRand.Next(1, waypointList.Count);
+        int numberOfWaypoints = instance.waypointHolder.transform.childCount;
 
-        return waypointList[waypointRandom];
+        for (int i = 0; i < numberOfWaypoints; i++)
+        {
+            Transform waypointTransform = instance.waypointHolder.transform.GetChild(i);
+
+            instance.waypointList.Add(waypointTransform);
+        }
+    }
+
+    Transform NextWaypoint()
+    {
+        int waypointRandom = waypointRand.Next(1, instance.waypointList.Count);
+
+        return instance.waypointList[waypointRandom];
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Shell")
+        if (collision.gameObject.tag == "Explosion")
         {
             state = State.dead;
             RunComplete();
