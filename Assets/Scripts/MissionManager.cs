@@ -441,7 +441,7 @@ public class MissionManager : MonoBehaviour
                 {
                     objReference = nextObj.GetComponent<Objective>();
                     string[] preStrings = objReference.GetPreStrings();
-                    if (preStrings != null)
+                    if (preStrings.Length != 0)
                     {
                         output = new string[(dialogue.Length + preStrings.Length + 1)];
                         output[0] = "dialogue";
@@ -450,17 +450,19 @@ public class MissionManager : MonoBehaviour
                         Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
                         screenManager.SetScreen(output);
                     }
-                    else if (dialogue[0] != "pass")
+                    else if (dialogue.Length != 0)
                     {
+                        Debug.Log("Not Null Apparently");
                         output = new string[(dialogue.Length + 1)];
                         output[0] = "dialogue";
 
                         Array.Copy(dialogue, 0, output, 1, dialogue.Length);
                         screenManager.SetScreen(output);
                     }
-                }
 
-                dialogue[0] = "pass";
+                    dialogue = new string[0];
+                    
+                }
             }
         }
         else

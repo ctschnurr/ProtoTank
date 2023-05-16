@@ -28,4 +28,6 @@ public class ShotManager : MonoBehaviour
         GameObject boom = Instantiate(explosion, save, transform.rotation);
         Destroy(gameObject);
     }
+
+
 }
