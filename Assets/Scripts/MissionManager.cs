@@ -28,7 +28,9 @@ public class MissionManager : MonoBehaviour
         missionComplete,
         missionFailed,
         missionNext,
-        advanceMission
+        advanceMission,
+        gameEnd,
+        quitToMenu
     }
 
     static string[] missionPreString;
@@ -48,6 +50,9 @@ public class MissionManager : MonoBehaviour
     static bool missionComplete = false;
     static bool missionFailed = false;
     static bool missionNext = false;
+    static bool missionFinal = false;
+    static bool gameEnd = false;
+    static bool quit = false;
 
     static Queue<State> missionQueue;
 
@@ -154,6 +159,16 @@ public class MissionManager : MonoBehaviour
 
                 Time.timeScale = 1;
                 break;
+
+            case State.gameEnd:
+                gameEnd = true;
+                stage = 0;
+                break;
+
+            case State.quitToMenu:
+                quit = true;
+                stage = 0;
+                break;
         }
         state = input;
         AdvanceMission();
@@ -168,7 +183,8 @@ public class MissionManager : MonoBehaviour
             {
                 case 0:
                     output = new string[2];
-                    output[0] = "missionStart";
+                    if (missionFinal) output[0] = "missionFinal";
+                    else output[0] = "missionStart";
                     output[1] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
                     screenManager.SetScreen(output);
 
@@ -285,9 +301,6 @@ public class MissionManager : MonoBehaviour
                     output[0] = "clear";
                     screenManager.SetScreen(output);
 
-                    // timer = 2;
-                    // state = State.idle;
-                    
                     stage++;
 
                     State next = State.advanceMission;
@@ -310,7 +323,90 @@ public class MissionManager : MonoBehaviour
                     state = State.idle;
                     StartMission();
                     break;
+            }
 
+        }
+
+        if (gameEnd)
+        {
+            switch (stage)
+            {
+                case 0:
+                    string[] output = new string[1];
+
+                    output[0] = "black";
+                    screenManager.SetScreen(output);
+
+                    output[0] = "clear";
+                    screenManager.SetScreen(output);
+
+                    stage++;
+
+                    State next = State.advanceMission;
+                    missionQueue.Enqueue(next);
+                    break;
+
+                case 1:
+                    RunReset();
+                    stage++;
+                    next = State.advanceMission;
+                    missionQueue.Enqueue(next);
+                    break;
+
+                case 2:
+                    output = new string[1];
+                    output[0] = "black";
+                    screenManager.SetScreen(output);
+
+                    output = new string[2];
+                    output[0] = "gameEnd";
+                    output[1] = "You finished the game! Well done!";
+                    screenManager.SetScreen(output);
+
+                    gameEnd = false;
+                    state = State.idle;
+                    break;
+            }
+
+        }
+
+        if (quit)
+        {
+            switch (stage)
+            {
+                case 0:
+                    string[] output = new string[1];
+
+                    output[0] = "black";
+                    screenManager.SetScreen(output);
+
+                    output[0] = "clear";
+                    screenManager.SetScreen(output);
+
+                    stage++;
+
+                    State next = State.advanceMission;
+                    missionQueue.Enqueue(next);
+                    break;
+
+                case 1:
+                    RunReset();
+                    stage++;
+                    next = State.advanceMission;
+                    missionQueue.Enqueue(next);
+                    break;
+
+                case 2:
+                    output = new string[1];
+                    output[0] = "black";
+                    screenManager.SetScreen(output);
+
+                    output[0] = "title";
+                    screenManager.SetScreen(output);
+
+                    quit = false;
+                    state = State.idle;
+                    break;
             }
 
         }
@@ -319,9 +415,13 @@ public class MissionManager : MonoBehaviour
 
     public void NextMission()
     {
-        State next = State.missionNext;
+        State next;
+        if (missionFinal) next = State.gameEnd;
+        else next = State.missionNext;
+
         missionQueue.Enqueue(next);
         state = State.idle;
+        if (currentMission == numberOfMissions - 1) missionFinal = true;
     }
 
     static public void RunReset()
@@ -452,7 +552,6 @@ public class MissionManager : MonoBehaviour
                     }
                     else if (dialogue.Length != 0)
                     {
-                        Debug.Log("Not Null Apparently");
                         output = new string[(dialogue.Length + 1)];
                         output[0] = "dialogue";
 
@@ -467,11 +566,14 @@ public class MissionManager : MonoBehaviour
         }
         else
         {
-            output = new string[(dialogue.Length + 1)];
-            output[0] = "dialogue";
+            if (dialogue.Length != 0)
+            {
+                output = new string[(dialogue.Length + 1)];
+                output[0] = "dialogue";
 
-            Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-            screenManager.SetScreen(output);
+                Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                screenManager.SetScreen(output);
+            }
 
             EndMission();
         }
@@ -481,6 +583,12 @@ public class MissionManager : MonoBehaviour
     {
         timer = endMissionDelay;
         State next = State.missionComplete;
+        missionQueue.Enqueue(next);
+    }
+
+    public void QuitToMenu()
+    {
+        State next = State.quitToMenu;
         missionQueue.Enqueue(next);
     }
 

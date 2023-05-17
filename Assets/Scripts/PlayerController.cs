@@ -60,7 +60,6 @@ public class PlayerController : MonoBehaviour
     float barrelH;
     float barrelV;
     float barrelVert;
-    float barrelVertical = 50.0f;
 
     float camH;
 

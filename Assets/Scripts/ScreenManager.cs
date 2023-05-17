@@ -37,7 +37,9 @@ public class ScreenManager : MonoBehaviour
         missionFailed,
         HUD,
         dialogue,
-        black
+        black,
+        missionFinal,
+        gameEnd
     }
 
     public State state = State.fadeIn;
@@ -51,6 +53,8 @@ public class ScreenManager : MonoBehaviour
     GameObject missionComplete;
     GameObject missionFailed;
     GameObject hud;
+    GameObject missionFinal;
+    GameObject gameEnd;
 
     GameObject shotFrame;
     Vector3 shotFrameRed;
@@ -78,8 +82,6 @@ public class ScreenManager : MonoBehaviour
     string message;
 
     Queue<string[]> screenQueue;
-
-    int lifetracker = 3;
 
     public delegate void FadeOutCompleteAction();
     public static event FadeOutCompleteAction OnFadeOutComplete;
@@ -120,6 +122,12 @@ public class ScreenManager : MonoBehaviour
         missionFailed.SetActive(false);
 
         hud = GameObject.Find("HUD");
+
+        missionFinal = GameObject.Find("FinalMissionScreen");
+        missionFinal.SetActive(false);
+
+        gameEnd = GameObject.Find("GameEndScreen");
+        gameEnd.SetActive(false);
 
         shotFrame = GameObject.Find("HUD/ShotFrame");
         shotFrameRed = shotFrame.transform.position;
@@ -316,6 +324,7 @@ public class ScreenManager : MonoBehaviour
                     else if(missionStart.activeSelf == true) screenObject = missionStart;
                     else if(missionComplete.activeSelf == true) screenObject = missionComplete;
                     else if(hud.activeSelf == true) screenObject = hud;
+                    else if(gameEnd.activeSelf == true) screenObject = gameEnd;
                     state = State.screenDisappear;
                     if (dialogueManager.GetState() != DialogueManager.State.idle)
                     {
@@ -373,6 +382,20 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.black;
                     if (blackScreen.activeSelf == false) state = State.fadeOut;
                     else state = State.fadeIn;
+                    break;
+
+                case Screen.missionFinal:
+                    currentScreen = Screen.pause;
+                    screenObject = missionFinal;
+                    state = State.fadeInBackground;
+                    dialogueManager.InfoBox(messageArray);
+                    break;
+
+                case Screen.gameEnd:
+                    currentScreen = Screen.pause;
+                    screenObject = gameEnd;
+                    state = State.fadeInBackground;
+                    dialogueManager.InfoBox(messageArray);
                     break;
 
                 default:
