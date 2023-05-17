@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurretController : MonoBehaviour
+public class TurretController : Objective
 {
+
+
     [HideInInspector]
     public enum State
     {
@@ -47,7 +49,6 @@ public class TurretController : MonoBehaviour
 
     float barrelRotateSpeed = 0.25f;
 
-
     float nextY;
 
     Vector3 targetAngle = new Vector3(0f, 0f, 0f);
@@ -56,11 +57,19 @@ public class TurretController : MonoBehaviour
 
     Color torchedBarrel;
     Color torchedChassis;
+    Color normalBarrel;
+    Color normalChassis;
+
+    bool enemyActive = false;
+    static TurretController instance;
 
     // Start is called before the first frame update
     void Start()
     {
         parent = transform.gameObject;
+
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
 
         chassisRotater = parent.transform.Find("ChassisRotater").gameObject; // ("TurretPrefab/ChassisRotater");
         barrelChassis = parent.transform.Find("ChassisRotater/BarrelChassis").gameObject; // ("TurretPrefab/ChassisRotater/BarrelChassis");
@@ -75,72 +84,91 @@ public class TurretController : MonoBehaviour
 
         barrelRotateSpeed = barrelRotateSpeed * Time.deltaTime;
 
-        torchedBarrel = barrel.GetComponent<Renderer>().material.color;
-        torchedBarrel = new Color(torchedBarrel.r - 0.3f, torchedBarrel.g - 0.3f, torchedBarrel.b - 0.3f);
-        torchedChassis = barrelChassis.GetComponent<Renderer>().material.color;
-        torchedChassis = new Color(torchedChassis.r - 0.5f, torchedChassis.g - 0.5f, torchedChassis.b - 0.5f);
+        normalBarrel = barrel.GetComponent<Renderer>().material.color;
+        torchedBarrel = new Color(normalBarrel.r - 0.3f, normalBarrel.g - 0.3f, normalBarrel.b - 0.3f);
+        normalChassis = barrelChassis.GetComponent<Renderer>().material.color;
+        torchedChassis = new Color(normalChassis.r - 0.5f, normalChassis.g - 0.5f, normalChassis.b - 0.5f);
+
+        if (transform.parent != null)
+        {
+            if (transform.parent.gameObject.tag == "MissionGroup" || transform.parent.gameObject.tag == "ObjectiveGroup") managed = true;
+        }
+
+        tpShader = Shader.Find("Transparent/Diffuse");
+        normalShader = Shader.Find("Standard");
+
+        MissionManager.OnRunReset += Reset;
+
+        instance = this;
+        subjectObject = transform.gameObject;
     }
 
     // Update is called once per frame
     void Update()
     {
-        playerPosition = player.transform.position;
-        distance = Vector3.Distance(playerPosition, transform.position);
+        if (gameManager.state == GameManager.State.active) enemyActive = true;
+        else enemyActive = false;
 
-        switch (state)
+        if (enemyActive)
         {
-            case State.idle:
-                chassisRotater.transform.Rotate(Vector3.up * 0.1f);
+            playerPosition = player.transform.position;
+            distance = Vector3.Distance(playerPosition, transform.position);
 
-                currentAngle = barrelRotater.transform.eulerAngles;
-                targetAngle.x = 80;
-                nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                barrelRotater.transform.eulerAngles = nextAngle;
+            switch (state)
+            {
+                case State.idle:
+                    chassisRotater.transform.Rotate(Vector3.up * 0.1f);
 
-                if (distance < turretSightDistance) state = State.tracking;
-                break;
+                    currentAngle = barrelRotater.transform.eulerAngles;
+                    targetAngle.x = 80;
+                    nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                    barrelRotater.transform.eulerAngles = nextAngle;
 
-            case State.tracking:
-                Vector3 playerDirection = playerPosition;
+                    if (distance < turretSightDistance) state = State.tracking;
+                    break;
 
-                // left/right rotation for barrel chassis
-                Vector3 targetDirection = playerPosition - chassisRotater.transform.position;
-                Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, barrelRotateSpeed, 0.0f);
-                newDirection.y = 0;
-                chassisRotater.transform.rotation = Quaternion.LookRotation(newDirection);
-                //
+                case State.tracking:
+                    Vector3 playerDirection = playerPosition;
 
-                // up/down rotation for barrel
-                currentAngle = barrelRotater.transform.eulerAngles;
-                barrelV = 500 / distance;
-                barrelV = Mathf.Clamp(barrelV, 40, 60);
-                targetAngle.x = barrelV;
-                nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
-                barrelRotater.transform.eulerAngles = nextAngle;
-                //
+                    // left/right rotation for barrel chassis
+                    Vector3 targetDirection = playerPosition - chassisRotater.transform.position;
+                    Vector3 newDirection = Vector3.RotateTowards(chassisRotater.transform.forward, targetDirection, barrelRotateSpeed, 0.0f);
+                    newDirection.y = 0;
+                    chassisRotater.transform.rotation = Quaternion.LookRotation(newDirection);
+                    //
 
-                // adjusting shot power based on distance to player
-                launchVelocity = 30 * distance;
-                launchVelocity = Mathf.Clamp(launchVelocity, 300, 700);
-                //
+                    // up/down rotation for barrel
+                    currentAngle = barrelRotater.transform.eulerAngles;
+                    barrelV = 500 / distance;
+                    barrelV = Mathf.Clamp(barrelV, 40, 60);
+                    targetAngle.x = barrelV;
+                    nextAngle = new Vector3(Mathf.LerpAngle(currentAngle.x, targetAngle.x, Time.deltaTime), currentAngle.y, currentAngle.z);
+                    barrelRotater.transform.eulerAngles = nextAngle;
+                    //
 
-                float angle = Vector3.Angle((playerPosition - transform.position), chassisRotater.transform.forward);
-                if (angle < 5f) facingPlayer = true;
-                if (angle > 5f) facingPlayer = false;
+                    // adjusting shot power based on distance to player
+                    launchVelocity = 30 * distance;
+                    launchVelocity = Mathf.Clamp(launchVelocity, 300, 700);
+                    //
 
-                if (Vector3.Distance(playerPosition, transform.position) < turretFireDistance && Vector3.Distance(playerPosition, chassisRotater.transform.position) > turretMinDistance) inRange = true;
-                if (Vector3.Distance(playerPosition, transform.position) > turretFireDistance || Vector3.Distance(playerPosition, chassisRotater.transform.position) < turretMinDistance) inRange = false;
+                    float angle = Vector3.Angle((playerPosition - transform.position), chassisRotater.transform.forward);
+                    if (angle < 5f) facingPlayer = true;
+                    if (angle > 5f) facingPlayer = false;
+
+                    if (Vector3.Distance(playerPosition, transform.position) < turretFireDistance && Vector3.Distance(playerPosition, chassisRotater.transform.position) > turretMinDistance) inRange = true;
+                    if (Vector3.Distance(playerPosition, transform.position) > turretFireDistance || Vector3.Distance(playerPosition, chassisRotater.transform.position) < turretMinDistance) inRange = false;
 
 
-                if (facingPlayer && inRange) Fire();
-                if (Vector3.Distance(playerPosition, transform.position) > turretSightDistance) state = State.idle;
-                break;
+                    if (facingPlayer && inRange) Fire();
+                    if (Vector3.Distance(playerPosition, transform.position) > turretSightDistance) state = State.idle;
+                    break;
 
-            case State.dead:
-                barrel.GetComponent<Rigidbody>().isKinematic = false;
-                barrel.GetComponent<Renderer>().material.color = torchedBarrel;
-                barrelChassis.GetComponent<Renderer>().material.color = torchedChassis;
-                break;
+                case State.dead:
+                    barrel.GetComponent<Rigidbody>().isKinematic = false;
+                    barrel.GetComponent<Renderer>().material.color = torchedBarrel;
+                    barrelChassis.GetComponent<Renderer>().material.color = torchedChassis;
+                    break;
+            }
         }
 
     }
@@ -158,9 +186,23 @@ public class TurretController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Shell")
+        if (collision.gameObject.tag == "Explosion")
         {
             state = State.dead;
+            RunComplete();
+        }
+    }
+
+    void Reset()
+    {
+        if (state == State.dead)
+        {
+            barrel.GetComponent<Rigidbody>().isKinematic = true;
+            barrelRotater.transform.localRotation = Quaternion.Euler(80, 0, 0);
+            barrel.GetComponent<Renderer>().material.color = normalBarrel;
+            barrelChassis.GetComponent<Renderer>().material.color = normalChassis;
+
+            state = State.idle;
         }
     }
 }

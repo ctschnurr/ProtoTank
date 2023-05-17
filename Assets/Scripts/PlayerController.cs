@@ -92,6 +92,7 @@ public class PlayerController : MonoBehaviour
     float damageTimerReset = 0.1f;
 
     int lives = 3;
+    int livesReset = 3;
     int livesMax = 4;
 
     public delegate void PlayerDamageAction();
@@ -175,7 +176,8 @@ public class PlayerController : MonoBehaviour
         barrelControl(0, 0);
         chassis.transform.localRotation = Quaternion.identity;
         barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
-        lives = livesMax;
+        lives = livesReset;
+        vulnerable = true;
 
         bodyRenderer.material.color = normalColor;
         chassisRenderer.material.color = normalColor;

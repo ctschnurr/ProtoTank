@@ -953,7 +953,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c22777d6e868e4f2fb421913386b154e, type: 2}
+  - {fileID: 2100000, guid: a9dde342e5b57a54b8e1778f226769f9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1045,12 +1045,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0168adb163092e346be449f99e71cb80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  subjectObject: {fileID: 0}
+  preStrings: []
+  postStrings: []
+  turretSightDistance: 30
+  turretFireDistance: 25
+  turretMinDistance: 10
   launchVelocity: 600
   projectile: {fileID: 7987857650390157338, guid: b30dad5b0cfcae042a9a871e186c235f, type: 3}
-  distance: 0
-  barrelV: 0
-  speed: 0.25
-  nextY: 0
 --- !u!54 &8203340589917479782
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11593,7 +11595,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c22777d6e868e4f2fb421913386b154e, type: 2}
+  - {fileID: 2100000, guid: a9dde342e5b57a54b8e1778f226769f9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11654,6 +11656,7 @@ GameObject:
   - component: {fileID: 1903081740870774693}
   - component: {fileID: 2301985611727371530}
   - component: {fileID: 1007127433780487201}
+  - component: {fileID: 1436190745156256189}
   m_Layer: 0
   m_Name: Barrel
   m_TagString: Untagged
@@ -14430,7 +14433,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c22777d6e868e4f2fb421913386b154e, type: 2}
+  - {fileID: 2100000, guid: 470602b2eff99264894081fbeb3f3039, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14512,6 +14515,20 @@ HingeJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!136 &1436190745156256189
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6624105706339130489}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.17933857
+  m_Height: 1.1967473
+  m_Direction: 1
+  m_Center: {x: -0.0021134908, y: -0.89921594, z: 0.000000029802315}
 --- !u!1 &8435977903543322726
 GameObject:
   m_ObjectHideFlags: 0
