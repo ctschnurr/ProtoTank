@@ -95,6 +95,9 @@ public class PlayerController : MonoBehaviour
     int livesReset = 3;
     int livesMax = 4;
 
+    int ammo = 0;
+    int ammoMax = 9;
+
     public delegate void PlayerDamageAction();
     public static event PlayerDamageAction OnPlayerDamage;
 
@@ -235,10 +238,12 @@ public class PlayerController : MonoBehaviour
                             GameObject shot = Instantiate(projectile, shotOrigin.transform.position, shotOrigin.transform.rotation);
                             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
                         }
-                        else if(weapon == Weapon.bigShot)
+                        else if(weapon == Weapon.bigShot && ammo > 0)
                         {
                             GameObject shot = Instantiate(projectile2, shotOrigin.transform.position, shotOrigin.transform.rotation);
                             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
+
+                            ammo--;
                         }
 
 
@@ -442,11 +447,25 @@ public class PlayerController : MonoBehaviour
         return lives;
     }
 
+    public int GetAmmo()
+    {
+        return ammo;
+    }
+
     public void PlayerDamage()
     {
         if (OnPlayerDamage != null)
         {
             OnPlayerDamage();
+        }
+    }
+
+    public void AddAmmo(int ammoAdd)
+    {
+        if (ammo < ammoMax)
+        {
+            ammo += ammoAdd;
+            if (ammo > ammoMax) ammo = ammoMax;
         }
     }
 

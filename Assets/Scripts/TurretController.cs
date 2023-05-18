@@ -22,6 +22,7 @@ public class TurretController : Objective
     GameObject barrelRotater;
     GameObject barrelChassis;
     GameObject barrel;
+    GameObject tower;
     GameObject shotOrigin;
     GameObject player;
 
@@ -38,8 +39,8 @@ public class TurretController : Objective
 
     float ShootDelay = 2;
     float lastShotTimer;
-    bool facingPlayer = false;
-    bool inRange = false;
+    public bool facingPlayer = false;
+    public bool inRange = false;
 
     State state = State.idle;
 
@@ -71,11 +72,12 @@ public class TurretController : Objective
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
 
-        chassisRotater = parent.transform.Find("ChassisRotater").gameObject; // ("TurretPrefab/ChassisRotater");
-        barrelChassis = parent.transform.Find("ChassisRotater/BarrelChassis").gameObject; // ("TurretPrefab/ChassisRotater/BarrelChassis");
-        barrelRotater = parent.transform.Find("ChassisRotater/BarrelRotater").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater");
-        barrel = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater/Barrel");
-        shotOrigin = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel/ShotOrigin").gameObject; // GameObject.Find("TurretPrefab/ChassisRotater/BarrelRotater/Barrel/ShotOrigin");
+        chassisRotater = parent.transform.Find("ChassisRotater").gameObject;
+        tower = parent.transform.Find("Tower").gameObject;
+        barrelChassis = parent.transform.Find("ChassisRotater/BarrelChassis").gameObject;
+        barrelRotater = parent.transform.Find("ChassisRotater/BarrelRotater").gameObject; 
+        barrel = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel").gameObject; 
+        shotOrigin = parent.transform.Find("ChassisRotater/BarrelRotater/Barrel/ShotOrigin").gameObject;
         player = GameObject.Find("Player").gameObject;
 
         lastShotTimer = Time.time;
@@ -151,7 +153,9 @@ public class TurretController : Objective
                     launchVelocity = Mathf.Clamp(launchVelocity, 300, 700);
                     //
 
-                    float angle = Vector3.Angle((playerPosition - transform.position), chassisRotater.transform.forward);
+                    Vector3 referencePos = transform.position;
+                    referencePos.y = playerPosition.y;
+                    float angle = Vector3.Angle((playerPosition - referencePos), chassisRotater.transform.forward);
                     if (angle < 5f) facingPlayer = true;
                     if (angle > 5f) facingPlayer = false;
 
@@ -167,6 +171,7 @@ public class TurretController : Objective
                     barrel.GetComponent<Rigidbody>().isKinematic = false;
                     barrel.GetComponent<Renderer>().material.color = torchedBarrel;
                     barrelChassis.GetComponent<Renderer>().material.color = torchedChassis;
+                    tower.GetComponent<Renderer>().material.color = torchedChassis;
                     break;
             }
         }
@@ -199,6 +204,7 @@ public class TurretController : Objective
         {
             barrel.GetComponent<Rigidbody>().isKinematic = true;
             barrelRotater.transform.localRotation = Quaternion.Euler(80, 0, 0);
+            tower.GetComponent<Renderer>().material.color = normalChassis;
             barrel.GetComponent<Renderer>().material.color = normalBarrel;
             barrelChassis.GetComponent<Renderer>().material.color = normalChassis;
 

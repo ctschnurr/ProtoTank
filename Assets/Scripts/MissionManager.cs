@@ -37,6 +37,7 @@ public class MissionManager : MonoBehaviour
     static string[] missionPostString;
 
     static State state = State.idle;
+    public State test;
 
     static int stage = 0;
     static float timer = 2;
@@ -110,6 +111,8 @@ public class MissionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        test = state;
+
         if (missionQueue.Count != 0 && state == State.idle)
         {
             if (countDown)
@@ -171,7 +174,7 @@ public class MissionManager : MonoBehaviour
                 break;
         }
         state = input;
-        AdvanceMission();
+        if (state != State.idle) AdvanceMission();
     }
 
     public static void AdvanceMission()
@@ -189,15 +192,13 @@ public class MissionManager : MonoBehaviour
                     screenManager.SetScreen(output);
 
                     stage++;
-                    State next = State.advanceMission;
-                    missionQueue.Enqueue(next);
                     break;
 
                 case 1:
                     gameManager.SetState(GameManager.State.active);
 
                     stage++;
-                    next = State.advanceMission;
+                    State next = State.advanceMission;
                     missionQueue.Enqueue(next);
                     break;
 
@@ -230,17 +231,22 @@ public class MissionManager : MonoBehaviour
                     GameObject activateMe = holder[0];
                     activateMe.SetActive(true);
 
+                    string[] dialogue = new string[0];
+
                     objReference = activateMe.GetComponent<Objective>();
-                    string[] dialogue = objReference.GetPreStrings();
+                    dialogue = objReference.GetPreStrings();
 
-                    output = new string[dialogue.Length + 1];
-                    output[0] = "dialogue";
+                    if (dialogue.Length != 0)
+                    {
+                        output = new string[dialogue.Length + 1];
+                        output[0] = "dialogue";
 
-                    Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                    screenManager.SetScreen(output);
+                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        screenManager.SetScreen(output);
+                    }
 
-                    missionStart = false;
                     state = State.idle;
+                    missionStart = false;
                     break;
             }
         }
@@ -601,8 +607,8 @@ public class MissionManager : MonoBehaviour
     static void PlayerDead()
     {
         timer = 2;
-        //countDown = true;
         State next = State.missionFailed;
         missionQueue.Enqueue(next);
+        countDown = true;
     }
 }

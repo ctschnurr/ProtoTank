@@ -60,6 +60,8 @@ public class ScreenManager : MonoBehaviour
     Vector3 shotFrameRed;
     Vector3 shotFrameBlack;
 
+    TextMeshProUGUI blackAmmo;
+
     GameObject heartA;
     GameObject heartB;
     GameObject heartC;
@@ -141,6 +143,8 @@ public class ScreenManager : MonoBehaviour
         heartD.SetActive(false);
         heartTarget = heartC;
 
+        blackAmmo = GameObject.Find("HUD/BlackAmmo").GetComponent<TextMeshProUGUI>();
+
         heartTempColor = heartTarget.GetComponent<Image>().color;
 
         hud.SetActive(false);
@@ -157,6 +161,8 @@ public class ScreenManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        blackAmmo.text = "x" + player.GetAmmo();
+
         switch (state)
         {
             case State.idle:
