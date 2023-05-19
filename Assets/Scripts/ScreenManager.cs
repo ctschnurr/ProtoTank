@@ -362,7 +362,6 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.pause;
                     screenObject = controlsScreen;
                     state = State.screenAppear;
-                    dialogueManager.InfoBox(messageArray);
                     break;
 
                 case Screen.missionStart:
@@ -488,12 +487,7 @@ public class ScreenManager : MonoBehaviour
         {
             output[0] = "clear";
             SetScreen(output);
-
-
-            output = new string[2];
             output[0] = "controls";
-            output[1] = "WASD - Move\nHold Shift - Throttle\nMouse Up/Down/Left/Right - Aim Turret\nMouse 1 - Fire\nF - Flip Tank\nR - Switch Weapon";
-            SetScreen(output);
             SetScreen(output);
             controlsUp = true;
         }
