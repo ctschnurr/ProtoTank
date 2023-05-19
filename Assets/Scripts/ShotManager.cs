@@ -7,6 +7,8 @@ public class ShotManager : MonoBehaviour
     public GameObject explosion;
     Vector3 save = new Vector3();
 
+    bool deadTriggered = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,12 +23,16 @@ public class ShotManager : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        GetComponent<Collider>().enabled = !GetComponent<Collider>().enabled;
-        save = transform.position;
-        //save.y -= 0.5f;
+        if (!deadTriggered)
+        {
+            deadTriggered = true;
 
-        GameObject boom = Instantiate(explosion, save, transform.rotation);
-        Destroy(gameObject);
+            GetComponent<Collider>().enabled = !GetComponent<Collider>().enabled;
+            save = transform.position;
+
+            GameObject boom = Instantiate(explosion, save, transform.rotation);
+            Destroy(gameObject);
+        }
     }
 
 

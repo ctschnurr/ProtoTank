@@ -50,6 +50,7 @@ public class DroneController : Objective
     public Quaternion[] resetRotations;
 
     Color tempcolor;
+    bool deadTriggered = false;
 
     // Start is called before the first frame update
     void Start()
@@ -182,10 +183,20 @@ public class DroneController : Objective
     {
         if (collision.gameObject.tag == "Explosion")
         {
+            DeadTrigger();
+        }
+    }
+
+    void DeadTrigger()
+    {
+        if(!deadTriggered)
+        {
+            deadTriggered = true;
+            parent.GetComponent<Collider>().enabled = false;
+
             state = State.dead;
             RunComplete();
 
-            parent.GetComponent<Collider>().enabled = false;
             foreach (GameObject piece in pieces)
             {
                 piece.GetComponent<Rigidbody>().isKinematic = false;
@@ -195,6 +206,8 @@ public class DroneController : Objective
 
     void Reset()
     {
+        deadTriggered = false;
+
         if (transform.position != spawnPoint)
         {
             transform.position = spawnPoint;

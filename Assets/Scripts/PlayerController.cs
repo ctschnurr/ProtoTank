@@ -50,8 +50,6 @@ public class PlayerController : MonoBehaviour
     Vector3 pointerMin = new Vector3(0.0005f, 0.0005f, 0.0005f);
     float pointerSizeSpeed = 0.0000005f;
 
-    GameObject controlsScreen;
-
     public GameObject projectile;
     public GameObject projectile2;
     GameObject shotOrigin;
@@ -121,9 +119,6 @@ public class PlayerController : MonoBehaviour
         checkpointPointer = GameObject.Find("Player/CamController/WaypointPointer");
         checkpointPointer.SetActive(false);
 
-        controlsScreen = GameObject.Find("ControlsScreen");
-        controlsScreen.SetActive(false);
-
         player = GameObject.Find("Player");
         chassis = GameObject.Find("Player/ChassisRotater");
         barrel = GameObject.Find("Player/ChassisRotater/BarrelRotater");
@@ -180,6 +175,7 @@ public class PlayerController : MonoBehaviour
         chassis.transform.localRotation = Quaternion.identity;
         barrel.transform.localRotation = Quaternion.Euler(60, 0, 0);
         lives = livesReset;
+        ammo = 0;
         vulnerable = true;
 
         bodyRenderer.material.color = normalColor;

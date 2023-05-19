@@ -521,27 +521,34 @@ public class MissionManager : MonoBehaviour
 
                     int count = nextObj.transform.childCount;
 
-                    if (preStrings != null)
+                    if (preStrings.Length != 0)
                     {
-                        output = new string[(dialogue.Length + preStrings.Length + 2)];
+                        // output = new string[(dialogue.Length + preStrings.Length + 2)];
+                        // output[0] = "dialogue";
+                        // 
+                        // Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        // output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
+                        // Array.Copy(preStrings, 0, output, dialogue.Length + 2, preStrings.Length);
+                        // 
+                        // screenManager.SetScreen(output);
+
+                        output = new string[(dialogue.Length + preStrings.Length + 1)];
                         output[0] = "dialogue";
 
                         Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                        output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
-                        Array.Copy(preStrings, 0, output, dialogue.Length + 2, preStrings.Length);
-
+                        Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
                         screenManager.SetScreen(output);
                     }
-                    else
-                    {
-                        output = new string[(dialogue.Length + 2)];
-                        output[0] = "dialogue";
-
-                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-
-                        output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
-                        screenManager.SetScreen(output);
-                    }
+                    //else
+                    //{
+                    //    output = new string[(dialogue.Length + 2)];
+                    //    output[0] = "dialogue";
+                    //
+                    //    Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                    //
+                    //    output[dialogue.Length + 1] = "This next objective has " + count + " parts!";
+                    //    screenManager.SetScreen(output);
+                    //}
                 }
                 else
                 {

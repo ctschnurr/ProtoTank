@@ -31,7 +31,7 @@ public class DialogueManager : MonoBehaviour
     public State state = State.idle;
 
     float fadeSpeed = 0.5f;
-    float sizeSpeed = 500f;
+    float sizeSpeed = 800f;
 
     Vector2 sizeReference;
     Vector2 maxSize = new Vector2(800, 200);

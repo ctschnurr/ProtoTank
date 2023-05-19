@@ -36,6 +36,7 @@ public class ScreenManager : MonoBehaviour
         missionComplete,
         missionFailed,
         HUD,
+        controls,
         dialogue,
         black,
         missionFinal,
@@ -53,6 +54,7 @@ public class ScreenManager : MonoBehaviour
     GameObject missionComplete;
     GameObject missionFailed;
     GameObject hud;
+    GameObject controlsScreen;
     GameObject missionFinal;
     GameObject gameEnd;
 
@@ -84,6 +86,8 @@ public class ScreenManager : MonoBehaviour
     string message;
 
     Queue<string[]> screenQueue;
+
+    bool controlsUp = false;
 
     public delegate void FadeOutCompleteAction();
     public static event FadeOutCompleteAction OnFadeOutComplete;
@@ -123,7 +127,10 @@ public class ScreenManager : MonoBehaviour
         missionFailed = GameObject.Find("MissionFailedScreen");
         missionFailed.SetActive(false);
 
-        hud = GameObject.Find("HUD");
+        hud = GameObject.Find("Screens/HUD");
+
+        controlsScreen = GameObject.Find("Controls");
+        controlsScreen.SetActive(false);
 
         missionFinal = GameObject.Find("FinalMissionScreen");
         missionFinal.SetActive(false);
@@ -136,14 +143,14 @@ public class ScreenManager : MonoBehaviour
         shotFrameBlack = shotFrameRed;
         shotFrameBlack.x += 125;
 
-        heartA = GameObject.Find("HUD/HeartA");
-        heartB = GameObject.Find("HUD/HeartB");
-        heartC = GameObject.Find("HUD/HeartC");
-        heartD = GameObject.Find("HUD/HeartD");
+        heartA = GameObject.Find("Screens/HUD/HeartA");
+        heartB = GameObject.Find("Screens/HUD/HeartB");
+        heartC = GameObject.Find("Screens/HUD/HeartC");
+        heartD = GameObject.Find("Screens/HUD/HeartD");
         heartD.SetActive(false);
         heartTarget = heartC;
 
-        blackAmmo = GameObject.Find("HUD/BlackAmmo").GetComponent<TextMeshProUGUI>();
+        blackAmmo = GameObject.Find("Screens/HUD/BlackAmmo").GetComponent<TextMeshProUGUI>();
 
         heartTempColor = heartTarget.GetComponent<Image>().color;
 
@@ -329,8 +336,9 @@ public class ScreenManager : MonoBehaviour
                     else if(pauseScreen.activeSelf == true) screenObject = pauseScreen;
                     else if(missionStart.activeSelf == true) screenObject = missionStart;
                     else if(missionComplete.activeSelf == true) screenObject = missionComplete;
-                    else if(hud.activeSelf == true) screenObject = hud;
                     else if(gameEnd.activeSelf == true) screenObject = gameEnd;
+                    else if(controlsScreen.activeSelf == true) screenObject = controlsScreen;
+                    else if(hud.activeSelf == true) screenObject = hud;
                     state = State.screenDisappear;
                     if (dialogueManager.GetState() != DialogueManager.State.idle)
                     {
@@ -347,7 +355,14 @@ public class ScreenManager : MonoBehaviour
                 case Screen.pause:
                     currentScreen = Screen.pause;
                     screenObject = pauseScreen;
-                    state = State.fadeInBackground;
+                    state = State.screenAppear;
+                    break;
+
+                case Screen.controls:
+                    currentScreen = Screen.pause;
+                    screenObject = controlsScreen;
+                    state = State.screenAppear;
+                    dialogueManager.InfoBox(messageArray);
                     break;
 
                 case Screen.missionStart:
@@ -463,5 +478,33 @@ public class ScreenManager : MonoBehaviour
     {
         if (shotFrame.transform.position == shotFrameRed) shotFrame.transform.position = shotFrameBlack;
         else if (shotFrame.transform.position == shotFrameBlack) shotFrame.transform.position = shotFrameRed;
+    }
+
+    public void ToggleControlsScreen()
+    {
+        string[] output = new string[1];
+
+        if (!controlsUp)
+        {
+            output[0] = "clear";
+            SetScreen(output);
+
+
+            output = new string[2];
+            output[0] = "controls";
+            output[1] = "WASD - Move\nHold Shift - Throttle\nMouse Up/Down/Left/Right - Aim Turret\nMouse 1 - Fire\nF - Flip Tank\nR - Switch Weapon";
+            SetScreen(output);
+            SetScreen(output);
+            controlsUp = true;
+        }
+
+        else if (controlsUp)
+        {
+            output[0] = "clear";
+            SetScreen(output);
+            output[0] = "pause";
+            SetScreen(output);
+            controlsUp = false;
+        }
     }
 }
