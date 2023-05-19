@@ -40,7 +40,8 @@ public class ScreenManager : MonoBehaviour
         dialogue,
         black,
         missionFinal,
-        gameEnd
+        gameEnd,
+        quitScreen
     }
 
     public State state = State.fadeIn;
@@ -57,6 +58,7 @@ public class ScreenManager : MonoBehaviour
     GameObject controlsScreen;
     GameObject missionFinal;
     GameObject gameEnd;
+    GameObject quitScreen;
 
     GameObject shotFrame;
     Vector3 shotFrameRed;
@@ -88,6 +90,9 @@ public class ScreenManager : MonoBehaviour
     Queue<string[]> screenQueue;
 
     bool controlsUp = false;
+    bool quitUp = false;
+
+    string prevString;
 
     public delegate void FadeOutCompleteAction();
     public static event FadeOutCompleteAction OnFadeOutComplete;
@@ -137,6 +142,9 @@ public class ScreenManager : MonoBehaviour
 
         gameEnd = GameObject.Find("GameEndScreen");
         gameEnd.SetActive(false);
+
+        quitScreen = GameObject.Find("QuitScreen");
+        quitScreen.SetActive(false);
 
         shotFrame = GameObject.Find("HUD/ShotFrame");
         shotFrameRed = shotFrame.transform.position;
@@ -338,6 +346,7 @@ public class ScreenManager : MonoBehaviour
                     else if(missionComplete.activeSelf == true) screenObject = missionComplete;
                     else if(gameEnd.activeSelf == true) screenObject = gameEnd;
                     else if(controlsScreen.activeSelf == true) screenObject = controlsScreen;
+                    else if (quitScreen.activeSelf == true) screenObject = quitScreen;
                     else if(hud.activeSelf == true) screenObject = hud;
                     state = State.screenDisappear;
                     if (dialogueManager.GetState() != DialogueManager.State.idle)
@@ -347,7 +356,7 @@ public class ScreenManager : MonoBehaviour
                     return;
 
                 case Screen.title:
-                    currentScreen = Screen.pause;
+                    currentScreen = Screen.title;
                     screenObject = titleScreen;
                     state = State.fadeInBackground;
                     break;
@@ -361,6 +370,12 @@ public class ScreenManager : MonoBehaviour
                 case Screen.controls:
                     currentScreen = Screen.pause;
                     screenObject = controlsScreen;
+                    state = State.screenAppear;
+                    break;
+
+                case Screen.quitScreen:
+                    currentScreen = Screen.pause;
+                    screenObject = quitScreen;
                     state = State.screenAppear;
                     break;
 
@@ -379,7 +394,7 @@ public class ScreenManager : MonoBehaviour
                     break;
 
                 case Screen.missionFailed:
-                    currentScreen = Screen.pause;
+                    currentScreen = Screen.missionFailed;
                     screenObject = missionFailed;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
@@ -412,7 +427,7 @@ public class ScreenManager : MonoBehaviour
                     break;
 
                 case Screen.gameEnd:
-                    currentScreen = Screen.pause;
+                    currentScreen = Screen.gameEnd;
                     screenObject = gameEnd;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
@@ -499,6 +514,31 @@ public class ScreenManager : MonoBehaviour
             output[0] = "pause";
             SetScreen(output);
             controlsUp = false;
+        }
+    }
+
+    public void ToggleQuitScreen()
+    {
+        string[] output = new string[1];
+
+        if (!quitUp)
+        {
+            Screen prevScreen = currentScreen;
+            prevString = currentScreen.ToString();
+            output[0] = "clear";
+            SetScreen(output);
+            output[0] = "quitScreen";
+            SetScreen(output);
+            quitUp = true;
+        }
+
+        else if (quitUp)
+        {
+            output[0] = "clear";
+            SetScreen(output);
+            output[0] = prevString;
+            SetScreen(output);
+            quitUp = false;
         }
     }
 }
