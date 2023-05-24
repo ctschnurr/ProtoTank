@@ -36,6 +36,12 @@ public class PlayerController : MonoBehaviour
     GameObject camController;
     GameObject player;
 
+    AudioSource tankSound;
+    AudioSource tankAmbience;
+    public AudioClip tankEngine;
+    public AudioClip tankFire;
+    public AudioClip ambience;
+
     Renderer bodyRenderer;
     Renderer chassisRenderer;
     Renderer leftTreadRenderer;
@@ -61,7 +67,7 @@ public class PlayerController : MonoBehaviour
 
     float camH;
 
-    float vert;
+    public float vert;
 
     float ShootDelay = 1;
     float lastShotTimer;
@@ -149,6 +155,12 @@ public class PlayerController : MonoBehaviour
         pointerSizeChange = new Vector3(pointerSizeSpeed, pointerSizeSpeed, pointerSizeSpeed);
 
         MissionManager.OnRunReset += Reset;
+
+        tankAmbience = GetComponent<AudioSource>();
+        tankSound = GameObject.Find("Player/CamController").GetComponent<AudioSource>();
+        tankEngine = Resources.Load<AudioClip>("tankEngine");
+        tankFire = Resources.Load<AudioClip>("tankFire");
+        ambience = Resources.Load<AudioClip>("ambience2");
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -199,10 +211,31 @@ public class PlayerController : MonoBehaviour
         switch (state)
         {
             case State.controlDisabled:
-
+                if (tankSound.isPlaying && tankSound.clip == tankEngine)
+                {
+                    tankSound.Stop();
+                }
                 return;
 
             case State.controlEnabled:
+
+                if (!tankSound.isPlaying)
+                {
+                    tankSound.clip = tankEngine;
+                    tankSound.loop = true;
+                    tankSound.Play();
+                }
+
+                if (!tankAmbience.isPlaying)
+                {
+                    tankAmbience.clip = ambience;
+                    tankAmbience.Play();
+                }
+
+                float tankSoundPitch = 1 + (vert * 10);
+                tankSoundPitch = Mathf.Clamp(tankSoundPitch, 1, 2);
+                tankSound.pitch = 1 + (vert * 10);
+
 
                 // newMousePos = Input.mousePosition - lastMousePos;
                 // xChange = newMousePos.y - lastMousePos.y;
@@ -231,6 +264,7 @@ public class PlayerController : MonoBehaviour
                     {
                         if(weapon == Weapon.smallShot)
                         {
+                            tankSound.PlayOneShot(tankFire, 1);
                             GameObject shot = Instantiate(projectile, shotOrigin.transform.position, shotOrigin.transform.rotation);
                             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
                         }

@@ -82,7 +82,7 @@ public class ScreenManager : MonoBehaviour
 
     float screenObjectScale;
     float fadeSpeed = 0.8f;
-    float shrinkSpeed = 0.80f;
+    float shrinkSpeed = 0.60f;
 
     string[] messageArray;
     string message;
@@ -97,9 +97,16 @@ public class ScreenManager : MonoBehaviour
     public delegate void FadeOutCompleteAction();
     public static event FadeOutCompleteAction OnFadeOutComplete;
 
+    AudioSource tankAmbience;
+
+    public AudioClip titleMusic;
+
     // Start is called before the first frame update
     public void Start()
     {
+        tankAmbience = GameObject.Find("Player").GetComponent<AudioSource>();
+        titleMusic = Resources.Load<AudioClip>("titleMusic");
+
         player = GameObject.Find("Player").GetComponent<PlayerController>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
@@ -229,10 +236,19 @@ public class ScreenManager : MonoBehaviour
                     screenObjectScale = screenObject.GetComponent<CanvasScaler>().scaleFactor;
                     screenObjectScale = Mathf.MoveTowards(screenObjectScale, 0.01f, shrinkSpeed);
                     screenObject.GetComponent<CanvasScaler>().scaleFactor = screenObjectScale;
+
+                    float volNum = screenObjectScale;
+
+                    if (tankAmbience.isPlaying && currentScreen == Screen.title)
+                    {
+                        tankAmbience.volume = volNum;
+                    }
                 }
                 else
                 {
                     screenObject.SetActive(false);
+                    tankAmbience.Stop();
+                    tankAmbience.volume = 1;
                     if (background.activeSelf == true) state = State.fadeOutBackground;
                     else state = State.idle;
                 }

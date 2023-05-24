@@ -207,7 +207,7 @@ public class DroneController : Objective
     void Reset()
     {
         deadTriggered = false;
-
+        parent.GetComponent<Collider>().enabled = true;
         if (transform.position != spawnPoint)
         {
             transform.position = spawnPoint;

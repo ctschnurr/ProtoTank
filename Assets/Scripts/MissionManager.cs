@@ -360,13 +360,13 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 2:
-                    output = new string[1];
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
-
                     output = new string[2];
                     output[0] = "gameEnd";
                     output[1] = "You finished the game! Well done!";
+                    screenManager.SetScreen(output);
+
+                    output = new string[1];
+                    output[0] = "black";
                     screenManager.SetScreen(output);
 
                     gameEnd = false;
@@ -398,16 +398,19 @@ public class MissionManager : MonoBehaviour
                 case 1:
                     RunReset();
                     stage++;
+                    SetMissions();
+                    missionFinal = false;
+                    currentMission = 0;
                     next = State.advanceMission;
                     missionQueue.Enqueue(next);
                     break;
 
                 case 2:
                     output = new string[1];
-                    output[0] = "black";
+                    output[0] = "title";
                     screenManager.SetScreen(output);
 
-                    output[0] = "title";
+                    output[0] = "black";
                     screenManager.SetScreen(output);
 
                     quit = false;
