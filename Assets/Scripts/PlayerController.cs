@@ -156,11 +156,10 @@ public class PlayerController : MonoBehaviour
 
         MissionManager.OnRunReset += Reset;
 
-        tankAmbience = GetComponent<AudioSource>();
         tankSound = GameObject.Find("Player/CamController").GetComponent<AudioSource>();
         tankEngine = Resources.Load<AudioClip>("tankEngine");
         tankFire = Resources.Load<AudioClip>("tankFire");
-        ambience = Resources.Load<AudioClip>("ambience2");
+       
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -218,28 +217,19 @@ public class PlayerController : MonoBehaviour
                 return;
 
             case State.controlEnabled:
-
-                if (!tankSound.isPlaying)
+                if (!tankSound.isPlaying && state != State.dead)
                 {
                     tankSound.clip = tankEngine;
                     tankSound.loop = true;
                     tankSound.Play();
                 }
 
-                if (!tankAmbience.isPlaying)
-                {
-                    tankAmbience.clip = ambience;
-                    tankAmbience.Play();
-                }
-
-                float tankSoundPitch = 1 + (vert * 10);
-                tankSoundPitch = Mathf.Clamp(tankSoundPitch, 1, 2);
-                tankSound.pitch = 1 + (vert * 10);
-
-
-                // newMousePos = Input.mousePosition - lastMousePos;
-                // xChange = newMousePos.y - lastMousePos.y;
-
+                float tankSoundPitch = 1 + (vert * 3);
+                float tankSoundVol = 0.25f + (vert * 3);
+                tankSoundPitch = Mathf.Clamp(tankSoundPitch, 1, 3);
+                tankSoundVol = Mathf.Clamp(tankSoundVol, 0.25f, 2);
+                tankSound.pitch = tankSoundPitch;
+                tankSound.volume = tankSoundVol;
 
                 if (throttle) vert = Input.GetAxis("Vertical") * (moveSpeed * throttleFactor);
                 if (!throttle) vert = Input.GetAxis("Vertical") * moveSpeed;
@@ -362,6 +352,11 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case State.dead:
+                if (tankSound.isPlaying && tankSound.clip == tankEngine)
+                {
+                    tankSound.Stop();
+                }
+
                 bodyRenderer.material.color = damageColor;
                 chassisRenderer.material.color = damageColor;
                 leftTreadRenderer.material.color = damageColor;
@@ -436,6 +431,10 @@ public class PlayerController : MonoBehaviour
                     state = State.dead;
                     pointerToggle = true;
                     PlayerDead();
+                    if (dialogueManager.GetState() != DialogueManager.State.idle)
+                    {
+                        dialogueManager.ClearDialogue();
+                    }
                 }
             }            
         }

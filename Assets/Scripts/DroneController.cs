@@ -52,6 +52,9 @@ public class DroneController : Objective
     Color tempcolor;
     bool deadTriggered = false;
 
+    AudioSource droneSound;
+    public AudioClip droneEngine;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -60,6 +63,9 @@ public class DroneController : Objective
         screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
 
         enemyDrone = GetComponent<UnityEngine.AI.NavMeshAgent>();
+
+        droneSound = GetComponent<AudioSource>();
+        droneEngine = Resources.Load<AudioClip>("droneEngine");
 
         parent = transform.gameObject;
         subjectObject = parent;
@@ -119,6 +125,14 @@ public class DroneController : Objective
             switch (state)
             {
                 case State.patrolling:
+
+                    if(!droneSound.isPlaying)
+                    {
+                        droneSound.clip = droneEngine;
+                        droneSound.loop = true;
+                        droneSound.Play();
+                    }
+
                     enemyDrone.isStopped = false;
                     enemyDrone.SetDestination(nextWaypoint.position);
 
@@ -157,6 +171,7 @@ public class DroneController : Objective
         else if (enemyActive == false)
         {
             enemyDrone.isStopped = true;
+            droneSound.Stop();
         }
     }
 
@@ -193,6 +208,8 @@ public class DroneController : Objective
         {
             deadTriggered = true;
             parent.GetComponent<Collider>().enabled = false;
+
+            droneSound.Stop();
 
             state = State.dead;
             RunComplete();

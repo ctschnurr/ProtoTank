@@ -55,12 +55,19 @@ public class MissionManager : MonoBehaviour
     static bool gameEnd = false;
     static bool quit = false;
 
+    static bool fadeIn = false;
+    static AudioSource input;
+
     static Queue<State> missionQueue;
 
     public static Objective objReference;
 
     public delegate void RunResetAction();
     public static event RunResetAction OnRunReset;
+
+    static AudioSource gameAmbience;
+
+    static AudioClip ambience;
 
     // Start is called before the first frame update
     void Start()
@@ -81,6 +88,8 @@ public class MissionManager : MonoBehaviour
 
         missionQueue = new Queue<State>();
 
+        gameAmbience = GameObject.Find("Player").GetComponent<AudioSource>();
+        ambience = Resources.Load<AudioClip>("ambience2");
     }
 
     public static void SetMissions()
@@ -125,6 +134,17 @@ public class MissionManager : MonoBehaviour
                 }
             }
         }
+
+        if (fadeIn == true)
+        {
+            if (input.volume < 1)
+            {
+                input.volume += 0.1f * (Time.deltaTime);
+            }
+            else fadeIn = false;
+        }
+
+
     }
 
     public static void StartMission()
@@ -185,6 +205,16 @@ public class MissionManager : MonoBehaviour
             switch (stage)
             {
                 case 0:
+                    if (!gameAmbience.isPlaying)
+                    {
+                        gameAmbience.clip = ambience;
+                        gameAmbience.loop = true;
+                        gameAmbience.volume = 0;
+                        gameAmbience.Play();
+                        input = gameAmbience;
+                        fadeIn = true;
+                    }
+
                     output = new string[2];
                     if (missionFinal) output[0] = "missionFinal";
                     else output[0] = "missionStart";
@@ -275,8 +305,11 @@ public class MissionManager : MonoBehaviour
 
         if (missionFailed)
         {
-            output = new string[1];
-            output[0] = "HUD";
+            // output = new string[1];
+            // output[0] = "HUD";
+            // screenManager.SetScreen(output);
+
+            output[0] = "clear";
             screenManager.SetScreen(output);
 
             output = new string[2];

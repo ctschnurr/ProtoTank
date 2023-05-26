@@ -98,14 +98,17 @@ public class ScreenManager : MonoBehaviour
     public static event FadeOutCompleteAction OnFadeOutComplete;
 
     AudioSource tankAmbience;
-
     public AudioClip titleMusic;
+    public AudioClip successSound;
+    public AudioClip failSound;
 
     // Start is called before the first frame update
     public void Start()
     {
         tankAmbience = GameObject.Find("Player").GetComponent<AudioSource>();
         titleMusic = Resources.Load<AudioClip>("titleMusic");
+        successSound = Resources.Load<AudioClip>("success");
+        failSound = Resources.Load<AudioClip>("fail");
 
         player = GameObject.Find("Player").GetComponent<PlayerController>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -239,7 +242,7 @@ public class ScreenManager : MonoBehaviour
 
                     float volNum = screenObjectScale;
 
-                    if (tankAmbience.isPlaying && currentScreen == Screen.title)
+                    if (tankAmbience.isPlaying && tankAmbience.clip == titleMusic)
                     {
                         tankAmbience.volume = volNum;
                     }
@@ -247,7 +250,7 @@ public class ScreenManager : MonoBehaviour
                 else
                 {
                     screenObject.SetActive(false);
-                    tankAmbience.Stop();
+                    if (tankAmbience.isPlaying && tankAmbience.clip == titleMusic) tankAmbience.Stop();
                     tankAmbience.volume = 1;
                     if (background.activeSelf == true) state = State.fadeOutBackground;
                     else state = State.idle;
@@ -407,6 +410,8 @@ public class ScreenManager : MonoBehaviour
                     screenObject = missionComplete;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
+
+                    tankAmbience.PlayOneShot(successSound);
                     break;
 
                 case Screen.missionFailed:
@@ -414,6 +419,8 @@ public class ScreenManager : MonoBehaviour
                     screenObject = missionFailed;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
+
+                    tankAmbience.PlayOneShot(failSound);
                     break;
 
                 case Screen.HUD:

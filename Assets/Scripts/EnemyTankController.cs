@@ -83,6 +83,11 @@ public class EnemyTankController : Objective
     Color torchedBarrel;
     Color torchedChassis;
 
+    AudioSource tankSound;
+    public AudioClip tankEngine;
+    public AudioClip tankFire;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -136,6 +141,10 @@ public class EnemyTankController : Objective
         tpShader = Shader.Find("Transparent/Diffuse");
 
         MissionManager.OnRunReset += Reset;
+
+        tankSound = GetComponent<AudioSource>();
+        tankEngine = Resources.Load<AudioClip>("tankEngine");
+        tankFire = Resources.Load<AudioClip>("tankFire");
     }
 
     void SetWaypoints()
@@ -162,6 +171,16 @@ public class EnemyTankController : Objective
 
         if (enemyActive)
         {
+            if (!tankSound.isPlaying && state != State.dead)
+            {
+                tankSound.clip = tankEngine;
+                tankSound.loop = true;
+                tankSound.Play();
+            }
+
+            if (enemyAgent.isStopped == true && state != State.dead) tankSound.pitch = 1;
+            else if (enemyAgent.isStopped == false && state != State.dead) tankSound.pitch = 1.3f;
+
             switch (state)
             {
                 case State.patrolling:
@@ -207,7 +226,7 @@ public class EnemyTankController : Objective
                             float chassisAngle = Vector3.Angle((playerPosition - chassis.transform.position), chassis.transform.forward);
 
                             currentAngle = barrel.transform.eulerAngles;
-                            barrelV = 1500 / distance;
+                            barrelV = 1700 / distance;
                             barrelV = Mathf.Clamp(barrelV, 70, 90);
                             targetAngle.x = barrelV;
 
@@ -241,6 +260,7 @@ public class EnemyTankController : Objective
 
                 case State.dead:
                     enemyAgent.isStopped = true;
+                    tankSound.Stop();
 
                     barrelObj.GetComponent<Rigidbody>().isKinematic = false;
                     barrelRenderer.material.color = torchedBarrel;
@@ -254,6 +274,11 @@ public class EnemyTankController : Objective
         else if (enemyActive == false)
         {
             enemyAgent.isStopped = true;
+
+            if (tankSound.isPlaying && tankSound.clip == tankEngine)
+            {
+                tankSound.Stop();
+            }
         }
 
 
@@ -295,6 +320,8 @@ public class EnemyTankController : Objective
             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
 
             lastShotTimer = Time.time;
+
+            tankSound.PlayOneShot(tankFire);
         }
     }
 
