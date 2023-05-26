@@ -14,9 +14,12 @@ public class HeartPickup : Pickup
         speed *= Time.deltaTime;
         posChange = new Vector3(0, speed, 0);
 
-        self = transform.parent.gameObject;
+        self = transform.gameObject;
 
         MissionManager.OnRunReset += Reset;
+
+        pickupSound = GetComponent<AudioSource>();
+        pickupClip = Resources.Load<AudioClip>("pickup");
     }
 
     public override void ActivateMe()
@@ -24,15 +27,18 @@ public class HeartPickup : Pickup
         int lives = player.GetLives();
         if (lives >= 4)
         {
-            string[] output = new string[2];
-            output[0] = "dialogue";
-            output[1] = "Your health is already full!";
-            screenManager.SetScreen(output);
+            // string[] output = new string[2];
+            // output[0] = "dialogue";
+            // output[1] = "Your health is already full!";
+            // screenManager.SetScreen(output);
         }
         else
         {
+            pickupSound.PlayOneShot(pickupClip);
+
             player.AddHealth(1);
             activated = true;
+
         }
     }
 }

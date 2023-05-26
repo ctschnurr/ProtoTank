@@ -48,7 +48,7 @@ public class TurretController : Objective
     private Quaternion _lookRotation;
     private Vector3 _direction;
 
-    float barrelRotateSpeed = 0.25f;
+    float barrelRotateSpeed = 1f;
 
     float nextY;
 
@@ -63,6 +63,9 @@ public class TurretController : Objective
 
     bool enemyActive = false;
     static TurretController instance;
+
+    AudioSource tankSound;
+    public AudioClip tankFire;
 
     // Start is called before the first frame update
     void Start()
@@ -103,6 +106,9 @@ public class TurretController : Objective
 
         instance = this;
         subjectObject = transform.gameObject;
+
+        tankSound = GetComponent<AudioSource>();
+        tankFire = Resources.Load<AudioClip>("tankFire");
     }
 
     // Update is called once per frame
@@ -119,6 +125,7 @@ public class TurretController : Objective
             switch (state)
             {
                 case State.idle:
+
                     chassisRotater.transform.Rotate(Vector3.up * 0.1f);
 
                     currentAngle = barrelRotater.transform.eulerAngles;
@@ -130,6 +137,7 @@ public class TurretController : Objective
                     break;
 
                 case State.tracking:
+
                     Vector3 playerDirection = playerPosition;
 
                     // left/right rotation for barrel chassis
@@ -163,7 +171,11 @@ public class TurretController : Objective
                     if (Vector3.Distance(playerPosition, transform.position) > turretFireDistance || Vector3.Distance(playerPosition, chassisRotater.transform.position) < turretMinDistance) inRange = false;
 
 
-                    if (facingPlayer && inRange) Fire();
+                    if (facingPlayer && inRange)
+                    {
+                        Fire();
+                    }
+
                     if (Vector3.Distance(playerPosition, transform.position) > turretSightDistance) state = State.idle;
                     break;
 
@@ -176,6 +188,11 @@ public class TurretController : Objective
             }
         }
 
+        else if (enemyActive == false)
+        {
+
+        }
+
     }
 
     public void Fire()
@@ -186,6 +203,8 @@ public class TurretController : Objective
             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
 
             lastShotTimer = Time.time;
+
+            tankSound.PlayOneShot(tankFire);
         }
     }
 

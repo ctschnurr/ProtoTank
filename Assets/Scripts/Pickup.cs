@@ -16,10 +16,13 @@ public class Pickup : MonoBehaviour
 
     public GameObject self;
 
+    public AudioSource pickupSound;
+    public AudioClip pickupClip;
+
     // Start is called before the first frame update
     void Start()
     {
-        self = transform.parent.gameObject;
+        self = transform.gameObject;
     }
 
     // Update is called once per frame
@@ -27,17 +30,20 @@ public class Pickup : MonoBehaviour
     {
         if (activated)
         {
-            self.SetActive(false);
-            activated = false;
+            if (!pickupSound.isPlaying)
+            {
+                self.SetActive(false);
+                activated = false;
+            }
         }
 
-        if (transform.parent.localPosition.y > 1.25f) up = false;
-        if (transform.parent.localPosition.y < 1f) up = true;
+        if (transform.localPosition.y > 1f) up = false;
+        if (transform.localPosition.y < 0.5f) up = true;
 
-        if (up) transform.parent.localPosition += posChange;
-        if (!up) transform.parent.localPosition -= posChange;
+        // if (up) transform.localPosition += posChange;
+        // if (!up) transform.localPosition -= posChange;
 
-        transform.parent.Rotate(Vector3.up * 0.5f);
+        transform.Rotate(Vector3.up * 0.5f);
     }
 
     void OnTriggerEnter(Collider other)
@@ -56,5 +62,6 @@ public class Pickup : MonoBehaviour
     public void Reset()
     {
         self.SetActive(true);
+        activated = false;
     }
 }

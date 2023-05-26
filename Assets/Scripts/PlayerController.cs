@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
     public AudioClip tankEngine;
     public AudioClip tankFire;
     public AudioClip ambience;
+    public AudioClip click;
 
     Renderer bodyRenderer;
     Renderer chassisRenderer;
@@ -159,7 +160,8 @@ public class PlayerController : MonoBehaviour
         tankSound = GameObject.Find("Player/CamController").GetComponent<AudioSource>();
         tankEngine = Resources.Load<AudioClip>("tankEngine");
         tankFire = Resources.Load<AudioClip>("tankFire");
-       
+        click = Resources.Load<AudioClip>("click");
+
     }
 
     void barrelControl(float horizontal, float vertical)
@@ -260,10 +262,17 @@ public class PlayerController : MonoBehaviour
                         }
                         else if(weapon == Weapon.bigShot && ammo > 0)
                         {
+                            tankSound.PlayOneShot(tankFire, 1);
+
                             GameObject shot = Instantiate(projectile2, shotOrigin.transform.position, shotOrigin.transform.rotation);
                             shot.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, launchVelocity, 0));
 
                             ammo--;
+                        }
+                        else if (weapon == Weapon.bigShot && ammo <= 0)
+                        {
+                            tankSound.PlayOneShot(click, 1);
+
                         }
 
 
@@ -503,7 +512,6 @@ public class PlayerController : MonoBehaviour
         if (lives < livesMax)
         {
             lives += healthAdd;
-            if (lives > livesMax) lives = livesMax;
             PlayerHeal();
         }
     }

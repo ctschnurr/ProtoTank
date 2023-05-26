@@ -45,6 +45,7 @@ public class Objective : MonoBehaviour
         if (managed == true)
         {
 
+            Debug.Log(subjectObject.name + "/" + postStrings.Length);
             missionManager.NextObjective(subjectObject, postStrings);
         }
 

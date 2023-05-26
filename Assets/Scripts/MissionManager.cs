@@ -216,7 +216,7 @@ public class MissionManager : MonoBehaviour
                     }
 
                     output = new string[2];
-                    if (missionFinal) output[0] = "missionFinal";
+                    if (currentMission + 1 == numberOfMissions) output[0] = "missionFinal";
                     else output[0] = "missionStart";
                     output[1] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
                     screenManager.SetScreen(output);
@@ -299,6 +299,9 @@ public class MissionManager : MonoBehaviour
             Cursor.visible = true;
 
             currentMission++;
+
+            if (currentMission == numberOfMissions) missionFinal = true;
+
 
             missionComplete = false;
         }
@@ -463,7 +466,6 @@ public class MissionManager : MonoBehaviour
 
         missionQueue.Enqueue(next);
         state = State.idle;
-        if (currentMission == numberOfMissions - 1) missionFinal = true;
     }
 
     static public void RunReset()

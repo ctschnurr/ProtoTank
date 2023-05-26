@@ -14,9 +14,12 @@ public class AmmoPickup : Pickup
         speed *= Time.deltaTime;
         posChange = new Vector3(0, speed, 0);
 
-        self = transform.parent.gameObject;
+        self = transform.gameObject;
 
         MissionManager.OnRunReset += Reset;
+
+        pickupSound = GetComponent<AudioSource>();
+        pickupClip = Resources.Load<AudioClip>("pickup");
     }
 
     public override void ActivateMe()
@@ -31,8 +34,11 @@ public class AmmoPickup : Pickup
         }
         else
         {
+            pickupSound.PlayOneShot(pickupClip);
+
             player.AddAmmo(3);
             activated = true;
+
         }
     }
 }

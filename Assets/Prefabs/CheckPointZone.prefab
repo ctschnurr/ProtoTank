@@ -2581,9 +2581,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d86150ec13aa034eafbc3f4824146a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  subjectObject: {fileID: 0}
+  preStrings: []
+  postStrings: []
   fadeOut: 0
   state: 0
-  dialogueStrings: []
 --- !u!82 &7179625118925016963
 AudioSource:
   m_ObjectHideFlags: 0

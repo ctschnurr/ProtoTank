@@ -8,8 +8,8 @@ public class BigExplosionManager : MonoBehaviour
     float fadeSpeed = 1f;
     Vector3 scaleChange;
 
-    // AudioSource bombSound;
-    // public AudioClip boomSound;
+    AudioSource bombSound;
+    public AudioClip boomSound;
 
     // Start is called before the first frame update
     void Start()
@@ -18,9 +18,12 @@ public class BigExplosionManager : MonoBehaviour
         fadeSpeed = fadeSpeed * Time.deltaTime;
 
         scaleChange = new Vector3(expandSpeed, expandSpeed, expandSpeed);
-        // bombSound = GetComponent<AudioSource>();
-        // boomSound = Resources.Load<AudioClip>("boom");
-        // bombSound.PlayOneShot(boomSound);
+
+        bombSound = GetComponent<AudioSource>();
+        boomSound = Resources.Load<AudioClip>("explosion");
+
+        bombSound.pitch = 0.8f;
+        bombSound.PlayOneShot(boomSound);
 
     }
 
@@ -33,6 +36,12 @@ public class BigExplosionManager : MonoBehaviour
         GetComponent<Renderer>().material.color = tempcolor;
 
         if (transform.localScale.x < 40) transform.localScale += scaleChange;
-        else Destroy(gameObject);
+        if (transform.localScale.x > 40)
+        {
+            //Destroy(gameObject);
+            GetComponent<Collider>().enabled = false;
+        }
+
+        if (!bombSound.isPlaying) Destroy(gameObject);
     }
 }

@@ -101,6 +101,7 @@ public class ScreenManager : MonoBehaviour
     public AudioClip titleMusic;
     public AudioClip successSound;
     public AudioClip failSound;
+    public AudioClip missionStartSound;
 
     // Start is called before the first frame update
     public void Start()
@@ -109,6 +110,7 @@ public class ScreenManager : MonoBehaviour
         titleMusic = Resources.Load<AudioClip>("titleMusic");
         successSound = Resources.Load<AudioClip>("success");
         failSound = Resources.Load<AudioClip>("fail");
+        missionStartSound = Resources.Load<AudioClip>("missionStart");
 
         player = GameObject.Find("Player").GetComponent<PlayerController>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -242,7 +244,7 @@ public class ScreenManager : MonoBehaviour
 
                     float volNum = screenObjectScale;
 
-                    if (tankAmbience.isPlaying && tankAmbience.clip == titleMusic)
+                    if (tankAmbience.isPlaying)
                     {
                         tankAmbience.volume = volNum;
                     }
@@ -378,6 +380,14 @@ public class ScreenManager : MonoBehaviour
                     currentScreen = Screen.title;
                     screenObject = titleScreen;
                     state = State.fadeInBackground;
+
+                    if (!tankAmbience.isPlaying)
+                    {
+                        tankAmbience.clip = titleMusic;
+                        tankAmbience.loop = true;
+                        tankAmbience.Play();
+                    }
+
                     break;
 
                 case Screen.pause:
@@ -403,6 +413,9 @@ public class ScreenManager : MonoBehaviour
                     screenObject = missionStart;
                     state = State.screenAppear;
                     dialogueManager.InfoBox(messageArray);
+
+                    tankAmbience.volume = 1;
+                    tankAmbience.PlayOneShot(missionStartSound);
                     break;
 
                 case Screen.missionComplete:
@@ -447,6 +460,8 @@ public class ScreenManager : MonoBehaviour
                     screenObject = missionFinal;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
+
+                    tankAmbience.PlayOneShot(missionStartSound);
                     break;
 
                 case Screen.gameEnd:
@@ -454,6 +469,11 @@ public class ScreenManager : MonoBehaviour
                     screenObject = gameEnd;
                     state = State.fadeInBackground;
                     dialogueManager.InfoBox(messageArray);
+
+                    if (tankAmbience.isPlaying) tankAmbience.Stop();
+                    tankAmbience.clip = titleMusic;
+                    tankAmbience.loop = true;
+                    tankAmbience.Play();
                     break;
 
                 default:
