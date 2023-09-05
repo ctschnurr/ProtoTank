@@ -12,7 +12,7 @@ public class Objective : MonoBehaviour
     PlayerController playerController;
     GameObject playerObject;
 
-    [HideInInspector]
+    //[HideInInspector]
     public GameObject subjectObject;
 
     public string[] preStrings;
@@ -26,6 +26,8 @@ public class Objective : MonoBehaviour
     protected Shader normalShader;
 
     protected Vector3 spawnPoint;
+
+    public bool activateDoor = false;
 
     // Start is called before the first frame update
     void Start()
@@ -67,5 +69,10 @@ public class Objective : MonoBehaviour
     public string[] GetPostStrings()
     {
         return postStrings;
+    }
+
+    public void ActivateMe()
+    {
+        activateDoor = true;
     }
 }

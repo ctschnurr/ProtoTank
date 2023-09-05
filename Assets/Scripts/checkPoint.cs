@@ -30,6 +30,7 @@ public class checkPoint : Objective
         Managed
     }
 
+    bool activated = false;
     public State state = State.Indy;
 
     void Start()
@@ -89,8 +90,9 @@ public class checkPoint : Objective
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player" && !activated)
         {
+            activated = true;
             checkpointSound.Play();
 
             PlayerController.SetRespawn(respawnPoint);

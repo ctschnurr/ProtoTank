@@ -7,10 +7,10 @@ public class MissionManager : MonoBehaviour
 {
     static DialogueManager dialogueManager;
     static GameManager gameManager;
-    static ScreenManager screenManager;
+    static ScreenManagerV2 screenManager;
     static PlayerController player;
 
-    static int endMissionDelay = 5;
+    static int endMissionDelay = 3;
 
     GameObject playerObj;
     static GameObject parent;
@@ -69,12 +69,14 @@ public class MissionManager : MonoBehaviour
 
     static AudioClip ambience;
 
+    GameManager.State gameState;
+
     // Start is called before the first frame update
     void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
-        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
+        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManagerV2>();
         player = GameObject.Find("Player").GetComponent<PlayerController>();
         playerObj = GameObject.Find("Player");
 
@@ -83,7 +85,7 @@ public class MissionManager : MonoBehaviour
         SetMissions();
 
         DialogueManager.OnDialogueEnd += NextStage;
-        ScreenManager.OnFadeOutComplete += NextStage;
+        ScreenManagerV2.OnFadeOutComplete += NextStage;
         PlayerController.OnPlayerDead += PlayerDead;
 
         missionQueue = new Queue<State>();
@@ -112,7 +114,7 @@ public class MissionManager : MonoBehaviour
 
                 missions[i].Add(missionObjective);
 
-                missionObjective.SetActive(false);
+                if (missionObjective.name != "Gate") missionObjective.SetActive(false);
             }
         }
     }
@@ -120,31 +122,33 @@ public class MissionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        test = state;
+        // test = state;
+        gameState = gameManager.GetState();
 
-        if (missionQueue.Count != 0 && state == State.idle)
+        if (gameState != GameManager.State.paused)
         {
-            if (countDown)
+            if (missionQueue.Count != 0 && state == State.idle)
             {
-                if (timer > 0) timer -= Time.deltaTime;
-                if (timer < 0)
+                if (countDown)
                 {
-                    State nextState = missionQueue.Dequeue();
-                    SetState(nextState);
+                    if (timer > 0) timer -= Time.deltaTime;
+                    if (timer < 0)
+                    {
+                        State nextState = missionQueue.Dequeue();
+                        SetState(nextState);
+                    }
                 }
             }
-        }
 
-        if (fadeIn == true)
-        {
-            if (input.volume < 1)
+            if (fadeIn == true)
             {
-                input.volume += 0.1f * (Time.deltaTime);
+                if (input.volume < 1)
+                {
+                    input.volume += 0.1f * (Time.deltaTime);
+                }
+                else fadeIn = false;
             }
-            else fadeIn = false;
         }
-
-
     }
 
     public static void StartMission()
@@ -215,11 +219,17 @@ public class MissionManager : MonoBehaviour
                         fadeIn = true;
                     }
 
-                    output = new string[2];
-                    if (currentMission + 1 == numberOfMissions) output[0] = "missionFinal";
-                    else output[0] = "missionStart";
-                    output[1] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
-                    screenManager.SetScreen(output);
+                    // output = new string[2];
+                    // if (currentMission + 1 == numberOfMissions) output[0] = "missionFinal";
+                    // else output[0] = "missionStart";
+                    // output[1] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
+                    // screenManager.SetScreen(output);
+
+                    output = new string[1];
+                    output[0] = "Mission " + (currentMission + 1) + ": \n\n" + missionPreString[0];
+
+                    if (currentMission + 1 == numberOfMissions) screenManager.SetScreen(ScreenManagerV2.Screen.missionFinal, output, false, 0);
+                    else screenManager.SetScreen(ScreenManagerV2.Screen.missionStart, output, false, 0);
 
                     stage++;
                     break;
@@ -233,10 +243,14 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 2:
-                    output = new string[2];
-                    output[0] = "dialogue";
-                    output[1] = "Please standby while I activate your HUD and waypoint compass.";
-                    screenManager.SetScreen(output);
+                    // output = new string[2];
+                    // output[0] = "dialogue";
+                    // output[1] = "Please standby while I activate your HUD and waypoint compass.";
+                    // screenManager.SetScreen(output);
+
+                    output = new string[1];
+                    output[0] = "Please standby while I activate your HUD and waypoint compass.";
+                    screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, output, false, 0);
 
                     stage++;
                     next = State.advanceMission;
@@ -244,9 +258,12 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 3:
-                    output = new string[1];
-                    output[0] = "HUD";
-                    screenManager.SetScreen(output);
+                    // output = new string[1];
+                    // output[0] = "HUD";
+                    // screenManager.SetScreen(output);
+
+                    screenManager.SetScreen(ScreenManagerV2.Screen.HUD, null, false, 0);
+
                     player.TogglePointer();
 
                     stage++;
@@ -268,11 +285,13 @@ public class MissionManager : MonoBehaviour
 
                     if (dialogue.Length != 0)
                     {
-                        output = new string[dialogue.Length + 1];
-                        output[0] = "dialogue";
+                        // output = new string[dialogue.Length + 1];
+                        // output[0] = "dialogue";
+                        // 
+                        // Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                        // screenManager.SetScreen(output);
 
-                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                        screenManager.SetScreen(output);
+                        screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, dialogue, true, 1);
                     }
 
                     state = State.idle;
@@ -283,14 +302,20 @@ public class MissionManager : MonoBehaviour
 
         if (missionComplete)
         {
-            output = new string[1];
-            output[0] = "HUD";
-            screenManager.SetScreen(output);
+            // output = new string[1];
+            // output[0] = "HUD";
+            // screenManager.SetScreen(output);
 
-            output = new string[2];
-            output[0] = "missionComplete";
-            output[1] = "\nGood work! \n\n Time:\n Attempts: \n\n" + missionPostString[0];
-            screenManager.SetScreen(output);
+            screenManager.SetScreen(ScreenManagerV2.Screen.HUD, null, false, 0);
+
+            // output = new string[2];
+            // output[0] = "missionComplete";
+            // output[1] = "\nGood work! \n\n" + missionPostString[0];
+            // screenManager.SetScreen(output);
+
+            output = new string[1];
+            output[0] = "\nGood work! \n\n" + missionPostString[0];
+            screenManager.SetScreen(ScreenManagerV2.Screen.missionComplete, output, false, 0);
 
             gameManager.SetState(GameManager.State.inactive);
             player.SetState(PlayerController.State.controlDisabled);
@@ -302,7 +327,6 @@ public class MissionManager : MonoBehaviour
 
             if (currentMission == numberOfMissions) missionFinal = true;
 
-
             missionComplete = false;
         }
 
@@ -312,13 +336,19 @@ public class MissionManager : MonoBehaviour
             // output[0] = "HUD";
             // screenManager.SetScreen(output);
 
-            output[0] = "clear";
-            screenManager.SetScreen(output);
+            // output[0] = "clear";
+            // screenManager.SetScreen(output);
 
-            output = new string[2];
-            output[0] = "missionFailed";
-            output[1] = "\nOh no!\n\nYour tank has been destroyed!\n\nChin up, soldier, we'll get 'em next time!";
-            screenManager.SetScreen(output);
+            screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
+
+            // output = new string[2];
+            // output[0] = "missionFailed";
+            // output[1] = "\nOh no!\n\nYour tank has been destroyed!\n\nChin up, soldier, we'll get 'em next time!";
+            // screenManager.SetScreen(output);
+
+            output = new string[1];
+            output[0] = "\nOh no!\n\nYour tank has been destroyed!\n\nChin up, soldier, we'll get 'em next time!";
+            screenManager.SetScreen(ScreenManagerV2.Screen.missionFailed, output, false, 0);
 
             gameManager.SetState(GameManager.State.inactive);
             player.SetState(PlayerController.State.controlDisabled);
@@ -335,13 +365,16 @@ public class MissionManager : MonoBehaviour
             switch (stage)
             {
                 case 0:
-                    string[] output = new string[1];
+                    // string[] output = new string[1];
+                    // 
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
+                    // 
+                    // output[0] = "clear";
+                    // screenManager.SetScreen(output);
 
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
-
-                    output[0] = "clear";
-                    screenManager.SetScreen(output);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
 
                     stage++;
 
@@ -357,9 +390,11 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 2:
-                    output = new string[1];
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
+                    // output = new string[1];
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
+
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
 
                     missionNext = false;
                     state = State.idle;
@@ -376,11 +411,14 @@ public class MissionManager : MonoBehaviour
                 case 0:
                     string[] output = new string[1];
 
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
+                    // 
+                    // output[0] = "clear";
+                    // screenManager.SetScreen(output);
 
-                    output[0] = "clear";
-                    screenManager.SetScreen(output);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
 
                     stage++;
 
@@ -396,14 +434,20 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 2:
-                    output = new string[2];
-                    output[0] = "gameEnd";
-                    output[1] = "You finished the game! Well done!";
-                    screenManager.SetScreen(output);
+                    // output = new string[2];
+                    // output[0] = "gameEnd";
+                    // output[1] = "You finished the game! Well done!";
+                    // screenManager.SetScreen(output);
 
                     output = new string[1];
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
+                    output[0] = "You finished the game! Well done!";
+                    screenManager.SetScreen(ScreenManagerV2.Screen.gameEnd, output, false, 0);
+
+                    // output = new string[1];
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
+
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
 
                     gameEnd = false;
                     state = State.idle;
@@ -419,11 +463,14 @@ public class MissionManager : MonoBehaviour
                 case 0:
                     string[] output = new string[1];
 
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
+                    // 
+                    // output[0] = "clear";
+                    // screenManager.SetScreen(output);
 
-                    output[0] = "clear";
-                    screenManager.SetScreen(output);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
 
                     stage++;
 
@@ -442,12 +489,15 @@ public class MissionManager : MonoBehaviour
                     break;
 
                 case 2:
-                    output = new string[1];
-                    output[0] = "title";
-                    screenManager.SetScreen(output);
+                    // output = new string[1];
+                    // output[0] = "title";
+                    // screenManager.SetScreen(output);
+                    // 
+                    // output[0] = "black";
+                    // screenManager.SetScreen(output);
 
-                    output[0] = "black";
-                    screenManager.SetScreen(output);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.title, null, false, 0);
+                    screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 0);
 
                     quit = false;
                     state = State.idle;
@@ -519,11 +569,17 @@ public class MissionManager : MonoBehaviour
 
             if (left > 0)
             {
-                output = new string[dialogue.Length + 2];
-                output[0] = "dialogue";
-                output[dialogue.Length + 1] = left + " to go!";
-                Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                screenManager.SetScreen(output);
+                // output = new string[dialogue.Length + 2];
+                // output[0] = "dialogue";
+                // output[dialogue.Length + 1] = left + " to go!";
+                // Array.Copy(dialogue, 0, output, 1, dialogue.Length);
+                // screenManager.SetScreen(output);
+
+                output = new string[dialogue.Length + 1];
+                Array.Copy(dialogue, 0, output, 0, dialogue.Length);
+                output[dialogue.Length] = left + " to go!";
+
+                screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, output, false, 0);
             }
             else
             {
@@ -549,7 +605,14 @@ public class MissionManager : MonoBehaviour
             {
                 List<GameObject> refList = missions[currentMission];
                 GameObject nextObj = refList[0];
-                nextObj.SetActive(true);
+
+                if (nextObj.activeSelf == false) nextObj.SetActive(true);
+                if (nextObj.name == "Gate")
+                {
+                    Transform tempTransform = nextObj.transform;
+                    objReference = tempTransform.GetComponent<Objective>();
+                    objReference.ActivateMe();
+                }
 
                 if (nextObj.tag == "ObjectiveGroup")
                 {
@@ -570,12 +633,11 @@ public class MissionManager : MonoBehaviour
                         // 
                         // screenManager.SetScreen(output);
 
-                        output = new string[(dialogue.Length + preStrings.Length + 1)];
-                        output[0] = "dialogue";
+                        output = new string[(dialogue.Length + preStrings.Length)];
 
-                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                        Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
-                        screenManager.SetScreen(output);
+                        Array.Copy(dialogue, 0, output, 0, dialogue.Length);
+                        Array.Copy(preStrings, 0, output, dialogue.Length, preStrings.Length);
+                        screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, output, false, 0);
                     }
                     //else
                     //{
@@ -594,20 +656,15 @@ public class MissionManager : MonoBehaviour
                     string[] preStrings = objReference.GetPreStrings();
                     if (preStrings.Length != 0)
                     {
-                        output = new string[(dialogue.Length + preStrings.Length + 1)];
-                        output[0] = "dialogue";
+                        output = new string[(dialogue.Length + preStrings.Length)];
 
-                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                        Array.Copy(preStrings, 0, output, dialogue.Length + 1, preStrings.Length);
-                        screenManager.SetScreen(output);
+                        Array.Copy(dialogue, 0, output, 0, dialogue.Length);
+                        Array.Copy(preStrings, 0, output, dialogue.Length, preStrings.Length);
+                        screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, output, false, 0);
                     }
                     else if (dialogue.Length != 0)
                     {
-                        output = new string[(dialogue.Length + 1)];
-                        output[0] = "dialogue";
-
-                        Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                        screenManager.SetScreen(output);
+                        screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, dialogue, false, 0);
                     }
 
                     dialogue = new string[0];
@@ -619,11 +676,7 @@ public class MissionManager : MonoBehaviour
         {
             if (dialogue.Length != 0)
             {
-                output = new string[(dialogue.Length + 1)];
-                output[0] = "dialogue";
-
-                Array.Copy(dialogue, 0, output, 1, dialogue.Length);
-                screenManager.SetScreen(output);
+                screenManager.SetScreen(ScreenManagerV2.Screen.dialogue, dialogue, false, 0);
             }
 
             EndMission();

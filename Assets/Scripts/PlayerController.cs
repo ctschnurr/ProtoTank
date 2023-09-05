@@ -39,6 +39,7 @@ public class PlayerController : MonoBehaviour
     AudioSource tankSound;
     AudioSource tankAmbience;
     public AudioClip tankEngine;
+    public AudioClip tankEngineIdle;
     public AudioClip tankFire;
     public AudioClip ambience;
     public AudioClip click;
@@ -89,6 +90,7 @@ public class PlayerController : MonoBehaviour
 
     bool damaged = false;
     bool vulnerable = true;
+    bool moving = false;
 
     int damageCount = 6;
     int damageCountReset = 6;
@@ -159,6 +161,7 @@ public class PlayerController : MonoBehaviour
 
         tankSound = GameObject.Find("Player/CamController").GetComponent<AudioSource>();
         tankEngine = Resources.Load<AudioClip>("tankEngine");
+        tankEngineIdle = Resources.Load<AudioClip>("tankEngineIdle");
         tankFire = Resources.Load<AudioClip>("tankFire");
         click = Resources.Load<AudioClip>("click");
 
@@ -221,12 +224,18 @@ public class PlayerController : MonoBehaviour
             case State.controlEnabled:
                 if (!tankSound.isPlaying && state != State.dead)
                 {
-                    tankSound.clip = tankEngine;
+                    if (!moving) tankSound.clip = tankEngineIdle;
+                    if(moving) tankSound.clip = tankEngine;
                     tankSound.loop = true;
                     tankSound.Play();
                 }
 
-                float tankSoundPitch = 1 + (vert * 3);
+                if (!moving) tankSound.clip = tankEngineIdle;
+                if (moving) tankSound.clip = tankEngine;
+
+                float tankSoundPitch = 1;
+                if (throttle) tankSoundPitch = 1 + (vert * 3);
+
                 float tankSoundVol = 0.25f + (vert * 3);
                 tankSoundPitch = Mathf.Clamp(tankSoundPitch, 1, 3);
                 tankSoundVol = Mathf.Clamp(tankSoundVol, 0.25f, 2);
@@ -239,7 +248,15 @@ public class PlayerController : MonoBehaviour
                 float horiz = Input.GetAxis("Horizontal") * rotateSpeed;
 
                 vert *= Time.deltaTime;
-                transform.Translate(0, 0, vert);
+                
+                if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
+                {
+                    transform.Translate(0, 0, vert);
+                    moving = true;
+                }
+
+                if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S)) moving = false;
+
 
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)) transform.Rotate(0.0f, horiz, 0.0f);
 

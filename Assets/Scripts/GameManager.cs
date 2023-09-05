@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
         dead
     }
 
-    ScreenManager screenManager;
+    ScreenManagerV2 screenManager;
     PlayerController player;
     MissionManager missionManager;
 
@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManager>();
+        screenManager = GameObject.Find("ScreenManager").GetComponent<ScreenManagerV2>();
         missionManager = GameObject.Find("MissionManager").GetComponent<MissionManager>();
         dialogueManager = GameObject.Find("DialogueManager").GetComponent<DialogueManager>();
 
@@ -33,6 +33,12 @@ public class GameManager : MonoBehaviour
 
         // DialogueManager.OnDialogueEnd += ReceiveEvent; // like saying 'start listening'
         // DialogueManager.OnDialogueEnd -= ReceiveEvent; // like saying 'stop listening'
+
+        screenManager.SetScreen(ScreenManagerV2.Screen.black, null, true, 2);
+        screenManager.SetScreen(ScreenManagerV2.Screen.black, null, true, 2);
+        screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
+        screenManager.SetScreen(ScreenManagerV2.Screen.title, null, false, 0);
+        screenManager.SetScreen(ScreenManagerV2.Screen.black, null, false, 1);
     }
 
     // Update is called once per frame
@@ -66,9 +72,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        string[] output = new string[1];
-        output[0] = "clear";
-        screenManager.SetScreen(output);
+        // string[] output = new string[1];
+        // output[0] = "clear";
+        screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
         MissionManager.StartMission();
     }
 
@@ -100,17 +106,28 @@ public class GameManager : MonoBehaviour
         {
             case State.active:
 
-                if (screenManager.GetState() == ScreenManager.State.idle)
-                {
-                    Time.timeScale = 1;
-                    player.SetState(PlayerController.State.controlEnabled);
-                    output = new string[1];
-                    output[0] = "clear";
-                    screenManager.SetScreen(output);
+                // if (screenManager.GetIsPaused() == true)
+                // {
+                //     Time.timeScale = 1;
+                //     player.SetState(PlayerController.State.controlEnabled);
+                //     // output = new string[1];
+                //     // output[0] = "clear";
+                //     screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
+                // 
+                //     Cursor.lockState = CursorLockMode.Locked;
+                //     Cursor.visible = false;
+                // }
 
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                }
+                Time.timeScale = 1;
+                player.SetState(PlayerController.State.controlEnabled);
+                // output = new string[1];
+                // output[0] = "clear";
+                screenManager.SetScreen(ScreenManagerV2.Screen.clear, null, false, 0);
+
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+
+                //
 
                 if (dialogueManager.GetState() != DialogueManager.State.idle)
                 {
@@ -121,10 +138,12 @@ public class GameManager : MonoBehaviour
                 break;
 
             case State.dead:
-                output = new string[2];
-                output[0] = "missionFailed";
-                output[1] = "I'm afraid you are dead!";
-                screenManager.SetScreen(output);
+                // output = new string[2];
+                // output[0] = "missionFailed";
+                // output[1] = "I'm afraid you are dead!";
+                output = new string[1];
+                output[0] = "I'm afraid you are dead!";
+                screenManager.SetScreen(ScreenManagerV2.Screen.missionFailed, output, false, 0);
 
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -133,17 +152,17 @@ public class GameManager : MonoBehaviour
                 break;
 
             case State.paused:
-                if (screenManager.GetState() == ScreenManager.State.idle)
+                if (screenManager.GetIsPaused() == false)
                 {
                     Time.timeScale = 0;
                     player.SetState(PlayerController.State.controlDisabled);
-                    output = new string[1];
-                    output[0] = "pause";
-                    screenManager.SetScreen(output);
-
+                    // output = new string[1];
+                    // output[0] = "pause";
+                    screenManager.SetScreen(ScreenManagerV2.Screen.pause, null, false, 0);
+                
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
-
+                
                     state = State.paused;
                 }
                 break;
